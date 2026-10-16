@@ -1,0 +1,44 @@
+*.iml
+.gradle
+/local.properties
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+
+# --- Команда «Туман» ---
+# Секреты
+.env
+.env.*
+!.env.example
+
+# Android / Gradle
+.gradle/
+build/
+local.properties
+*.apk
+*.aab
+.idea/
+*.iml
+
+# Node / Python
+node_modules/
+__pycache__/
+.venv/
+
+# ОС
+.DS_Store
+Thumbs.db
+
+# Claude Code — личные настройки
+.claude/settings.local.json
+CLAUDE.local.md
+
