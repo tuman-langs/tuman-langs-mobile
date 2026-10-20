@@ -8,20 +8,31 @@
       "Bash(git diff *)",
       "Bash(git log *)",
       "Bash(git branch *)",
+      "Bash(git fetch *)",
+      "Bash(gh api user *)",
       "Bash(gh issue view *)",
+      "Bash(gh issue list *)",
       "Bash(gh pr view *)",
+      "Bash(gh pr diff *)",
+      "Bash(gh pr list *)",
       "Bash(gh pr status)",
       "Bash(./gradlew test)",
       "Bash(./gradlew test *)",
+      "Bash(./gradlew :core-srs:test)",
+      "Bash(./gradlew :app:testDebugUnitTest)",
       "Bash(./gradlew assembleDebug)"
     ],
     "deny": [
       "Read(./.env)",
       "Read(./.env.*)",
       "Read(./local.properties)",
+      "Read(./**/google-services.json)",
       "Bash(git push --force *)",
       "Bash(git push -f *)",
-      "Bash(git reset --hard *)"
+      "Bash(git push origin main)",
+      "Bash(git push origin main *)",
+      "Bash(git reset --hard *)",
+      "Bash(git clean *)"
     ]
   }
 }
