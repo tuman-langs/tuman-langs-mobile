@@ -24,6 +24,47 @@ git config --global user.name "Имя Фамилия"
 git config --global user.email "почта-как-на-github@example.com"
 ```
 
+### Java для Gradle (`JAVA_HOME`)
+
+Наш Gradle 8.13 не запускается на Java 24 и новее, поэтому в команде все используют **JDK 21**. Java 24 часто стоит в системе отдельно, а в новых Android Studio (например, 2026.2) встроена Java 25. Ошибка бывает такой:
+
+```
+Could not create task ':app:testDebugUnitTest'.
+   ...
+      > Type T not present
+```
+
+или просто номер версии Java вместо описания (`What went wrong: 25.0.3`).
+
+Java для Gradle задаётся в двух местах, и в обоих нужен JDK 21:
+- **Android Studio** (Sync, кнопки Run и тесты) — настройка Gradle JDK;
+- **`gradlew` в терминале** — переменная `JAVA_HOME`; если её нет, берётся первая `java` из системного PATH.
+
+**1. Установите JDK 21**, если его ещё нет. Подойдёт любой из двух вариантов:
+- из самой Android Studio: **Settings → Build, Execution, Deployment → Build Tools → Gradle → Gradle JDK → Download JDK…**, версия **21**, любой поставщик. Путь, куда Studio его положила, показан в этом же списке;
+- Temurin 21 с https://adoptium.net (на Windows обычно `C:\Program Files\Eclipse Adoptium\jdk-21…`).
+
+Встроенную Java Android Studio (`…\Android Studio\jbr`) используйте только если `"<путь>\bin\java" -version` показывает 21.
+
+**2. Android Studio:** там же, в **Gradle JDK**, выберите этот JDK 21 и нажмите **Sync Project with Gradle Files**.
+
+**3. Терминал:** укажите `JAVA_HOME` на папку JDK 21 (ту, в которой лежит `bin`).
+
+**Windows (PowerShell)** — насовсем для вашего пользователя, затем закройте и снова откройте терминал (и Android Studio, если терминал в ней):
+```powershell
+[Environment]::SetEnvironmentVariable("JAVA_HOME", "<путь к JDK 21>", "User")
+```
+То же через интерфейс: «Параметры» → поиск «переменные среды» → «Изменить переменные среды для вашей учётной записи» → «Создать».
+
+**macOS** — добавьте строку в `~/.zshrc` и откройте новый терминал (`/usr/libexec/java_home -v 21` сам находит установленный JDK 21):
+```bash
+export JAVA_HOME="$(/usr/libexec/java_home -v 21)"
+```
+
+**Проверка:** `./gradlew --version` (на Windows `.\gradlew.bat --version`) — в строке `Launcher JVM` должно быть **21.x** (поставщик любой: JetBrains, Eclipse Adoptium…). Если видите 24 или 25 — переменная не подхватилась или указывает не туда, откройте терминал заново и проверьте путь.
+
+Не поднимайте версию Gradle, чтобы «починить» ошибку: она подобрана под Android Gradle Plugin 8.13 (см. `CLAUDE.md`).
+
 ## 3. Получить проект
 
 Android Studio → **File → New → Project from Version Control** → `https://github.com/tuman-langs/tuman-langs-mobile.git` → Clone. Backend-разработчику — ещё и `tuman-langs-backend`. При первом входе Android Studio попросит авторизоваться в GitHub через браузер.
