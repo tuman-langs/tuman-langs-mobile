@@ -114,7 +114,7 @@ Screen ──действие──▶ ViewModel ──▶ Repository (domain) �
 
 ## 🚀 Как запустить
 
-**Нужно:** Android Studio (Narwhal или новее), JDK 17 — встроенный в Android Studio, эмулятор или телефон с Android 8.0+.
+**Нужно:** Android Studio (Narwhal или новее), JDK 21 (в новых версиях Android Studio встроена Java 25, она не подходит; как выбрать JDK 21 в Studio и в `JAVA_HOME` — [docs/onboarding.md](docs/onboarding.md#java-для-gradle-java_home)), эмулятор или телефон с Android 8.0+.
 
 1. **Клонировать.** Android Studio → **File → New → Project from Version Control** → `https://github.com/tuman-langs/tuman-langs-mobile.git`. Или в терминале:
    ```bash
