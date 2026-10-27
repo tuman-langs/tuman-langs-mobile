@@ -24,6 +24,38 @@ git config --global user.name "Имя Фамилия"
 git config --global user.email "почта-как-на-github@example.com"
 ```
 
+### Java для Gradle (`JAVA_HOME`)
+
+Кнопки в Android Studio сами используют встроенную в неё Java 21 (JBR). А `gradlew` в терминале берёт Java из переменной `JAVA_HOME`, а если её нет — первую `java` из системного PATH. Если там установлена Java 24 или новее, Gradle 8.13 падает с непонятной ошибкой:
+
+```
+Could not create task ':app:testDebugUnitTest'.
+   ...
+      > Type T not present
+```
+
+Поэтому один раз укажите `JAVA_HOME` на Java из Android Studio. Путь зависит от того, куда вы её установили; по умолчанию:
+
+| Система | Путь к Java из Android Studio |
+|---|---|
+| Windows | `C:\Program Files\Android\Android Studio\jbr` |
+| macOS | `/Applications/Android Studio.app/Contents/jbr/Contents/Home` |
+
+**Windows (PowerShell)** — насовсем для вашего пользователя, затем закройте и снова откройте терминал (и Android Studio, если терминал в ней):
+```powershell
+[Environment]::SetEnvironmentVariable("JAVA_HOME", "C:\Program Files\Android\Android Studio\jbr", "User")
+```
+То же через интерфейс: «Параметры» → поиск «переменные среды» → «Изменить переменные среды для вашей учётной записи» → «Создать».
+
+**macOS** — добавьте строку в `~/.zshrc` и откройте новый терминал:
+```bash
+export JAVA_HOME="/Applications/Android Studio.app/Contents/jbr/Contents/Home"
+```
+
+**Проверка:** `./gradlew --version` (на Windows `.\gradlew.bat --version`) — в строке `Launcher JVM` должно быть **21.x (JetBrains)**. Если видите 24 — переменная не подхватилась, откройте терминал заново.
+
+Не поднимайте версию Gradle, чтобы «починить» ошибку: она подобрана под Android Gradle Plugin 8.13 (см. `CLAUDE.md`).
+
 ## 3. Получить проект
 
 Android Studio → **File → New → Project from Version Control** → `https://github.com/tuman-langs/tuman-langs-mobile.git` → Clone. Backend-разработчику — ещё и `tuman-langs-backend`. При первом входе Android Studio попросит авторизоваться в GitHub через браузер.
