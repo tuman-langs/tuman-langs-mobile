@@ -1,4 +1,4 @@
-package ru.itmo.tuman.ui.theme
+package ru.itmo.tuman.core.uikit.theme
 
 import androidx.compose.ui.graphics.Color
 
