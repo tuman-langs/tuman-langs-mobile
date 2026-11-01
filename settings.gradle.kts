@@ -21,4 +21,5 @@ dependencyResolutionManagement {
 
 rootProject.name = "Tuman"
 include(":app")
+include(":core-srs")
  
