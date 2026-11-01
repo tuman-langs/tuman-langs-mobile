@@ -1,6 +1,7 @@
 package ru.itmo.tuman.core.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -22,21 +23,23 @@ import ru.itmo.tuman.features.settings.ui.SettingsScreen
  */
 @Composable
 fun TumanNavHost(navController: NavHostController = rememberNavController()) {
-    val goBack: () -> Unit = { navController.popBackStack() }
+    val goBack: () -> Unit = { if (navController.canNavigate()) navController.popBackStack() }
 
     NavHost(navController = navController, startDestination = HomeRoute) {
         composable<HomeRoute> {
             HomeScreen(
-                onStartReviewClick = { navController.navigate(ReviewRoute) },
-                onDecksClick = { navController.navigate(DecksRoute) },
-                onCatalogClick = { navController.navigate(CatalogRoute) },
-                onProgressClick = { navController.navigate(ProgressRoute) },
-                onSettingsClick = { navController.navigate(SettingsRoute) },
+                onStartReviewClick = { if (navController.canNavigate()) navController.navigate(ReviewRoute) },
+                onDecksClick = { if (navController.canNavigate()) navController.navigate(DecksRoute) },
+                onCatalogClick = { if (navController.canNavigate()) navController.navigate(CatalogRoute) },
+                onProgressClick = { if (navController.canNavigate()) navController.navigate(ProgressRoute) },
+                onSettingsClick = { if (navController.canNavigate()) navController.navigate(SettingsRoute) },
             )
         }
         composable<DecksRoute> {
             DecksScreen(
-                onDeckClick = { deckId -> navController.navigate(DeckRoute(deckId)) },
+                onDeckClick = { deckId ->
+                    if (navController.canNavigate()) navController.navigate(DeckRoute(deckId))
+                },
                 onBack = goBack,
             )
         }
@@ -44,7 +47,9 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
             val route = entry.toRoute<DeckRoute>()
             DeckScreen(
                 deckId = route.deckId,
-                onAddCardClick = { navController.navigate(CardEditRoute(deckId = route.deckId)) },
+                onAddCardClick = {
+                    if (navController.canNavigate()) navController.navigate(CardEditRoute(deckId = route.deckId))
+                },
                 onBack = goBack,
             )
         }
@@ -57,3 +62,12 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
         composable<SettingsRoute> { SettingsScreen(onBack = goBack) }
     }
 }
+
+/**
+ * true, если текущий экран полностью открыт и не уезжает с анимацией.
+ * Пока идёт анимация перехода, кнопки старого экрана ещё нажимаются: без этой проверки
+ * двойное нажатие «Назад» убирает и главный экран (остаётся пустой), а двойное нажатие
+ * кнопки открывает один экран два раза.
+ */
+private fun NavHostController.canNavigate() =
+    currentBackStackEntry?.lifecycle?.currentState == Lifecycle.State.RESUMED
