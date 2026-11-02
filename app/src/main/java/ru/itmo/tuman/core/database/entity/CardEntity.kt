@@ -19,6 +19,11 @@ import androidx.room.PrimaryKey
  *
  * Карточка принадлежит набору ([deckId]). Удалили набор — Room сам удалит
  * его карточки (`onDelete = CASCADE`).
+ *
+ * У карточек из каталога есть ещё [remoteId] — id из файла набора (`ba-letters-0001`).
+ * Он не меняется после публикации, поэтому при обновлении набора по нему находим
+ * ту же карточку и сохраняем её прогресс и историю. У своих карточек — `null`.
+ * [exampleTranslation], [pronunciation], [notes] тоже приходят из каталога и необязательны.
  */
 @Entity(
     tableName = "cards",
@@ -34,6 +39,8 @@ import androidx.room.PrimaryKey
         Index("deck_id"),
         // По due отбирается список «на сегодня», индекс ускоряет этот запрос
         Index("due"),
+        // id карточки уникален внутри набора каталога
+        Index(value = ["deck_id", "remote_id"], unique = true),
     ],
 )
 data class CardEntity(
@@ -45,6 +52,12 @@ data class CardEntity(
     val back: String,
     /** Пример употребления, необязательный. */
     val example: String? = null,
+    @ColumnInfo(name = "example_translation")
+    val exampleTranslation: String? = null,
+    val pronunciation: String? = null,
+    val notes: String? = null,
+    @ColumnInfo(name = "remote_id")
+    val remoteId: String? = null,
     val stability: Double = INITIAL_STABILITY_DAYS,
     val difficulty: Double = INITIAL_DIFFICULTY,
     /** Миллисекунды с 1970 года (UTC). */
