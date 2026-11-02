@@ -37,4 +37,15 @@ interface CardDao {
     /** Сколько карточек в наборе — для подписи в списке наборов. */
     @Query("SELECT COUNT(*) FROM cards WHERE deck_id = :deckId")
     fun observeCountByDeck(deckId: Long): Flow<Int>
+
+    /**
+     * Меняет только текст карточки. Поля алгоритма (stability, due и т. д.)
+     * не трогает: исправление опечатки не должно сбрасывать прогресс повторения.
+     */
+    @Query("UPDATE cards SET front = :front, back = :back, example = :example WHERE id = :id")
+    suspend fun updateText(id: Long, front: String, back: String, example: String?)
+
+    /** Удаляет карточку по id вместе с её историей ответов (каскад). */
+    @Query("DELETE FROM cards WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }

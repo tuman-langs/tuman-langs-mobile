@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.itmo.tuman.core.database.entity.DeckEntity
+import ru.itmo.tuman.core.database.entity.DeckWithCardCount
 
 /**
  * Запросы к таблице наборов.
@@ -34,4 +35,25 @@ interface DeckDao {
 
     @Query("SELECT * FROM decks WHERE id = :id")
     suspend fun getById(id: Long): DeckEntity?
+
+    /**
+     * Все наборы с числом карточек, новые сверху.
+     * LEFT JOIN — чтобы пустой набор (0 карточек) тоже попал в список.
+     */
+    @Query(
+        """
+        SELECT decks.*, COUNT(cards.id) AS card_count
+        FROM decks LEFT JOIN cards ON cards.deck_id = decks.id
+        GROUP BY decks.id
+        ORDER BY decks.created_at DESC, decks.id DESC
+        """,
+    )
+    fun observeAllWithCardCount(): Flow<List<DeckWithCardCount>>
+
+    @Query("UPDATE decks SET title = :title WHERE id = :id")
+    suspend fun rename(id: Long, title: String)
+
+    /** Удаляет набор по id вместе с карточками и историей (каскад). */
+    @Query("DELETE FROM decks WHERE id = :id")
+    suspend fun deleteById(id: Long)
 }
