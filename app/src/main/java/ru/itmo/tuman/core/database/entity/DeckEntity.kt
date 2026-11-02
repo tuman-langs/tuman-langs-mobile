@@ -2,6 +2,7 @@ package ru.itmo.tuman.core.database.entity
 
 import androidx.room.ColumnInfo
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 /**
@@ -12,8 +13,20 @@ import androidx.room.PrimaryKey
  * @property language код языка набора, в MVP всегда `ba` (башкирский).
  * @property source откуда набор: создан пользователем или скачан из каталога.
  * @property createdAt дата создания, миллисекунды с 1970 года (UTC).
+ * @property description краткое описание; есть у наборов из каталога.
+ * @property remoteId id набора в каталоге (`ba-basic-words`), у своих наборов `null`.
+ *   По нему понимаем, что набор уже скачан.
+ * @property remoteVersion поле `version` из файла набора. Если на сервере версия больше —
+ *   вышло обновление. У своих наборов `null`.
+ *
+ * Формат файла набора — `content/README.md` в tuman-langs-backend (утверждён в backend#2).
  */
-@Entity(tableName = "decks")
+@Entity(
+    tableName = "decks",
+    // Один и тот же набор каталога нельзя скачать дважды.
+    // У своих наборов remote_id = NULL, а NULL в уникальном индексе не мешают друг другу.
+    indices = [Index(value = ["remote_id"], unique = true)],
+)
 data class DeckEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
@@ -22,6 +35,11 @@ data class DeckEntity(
     val source: DeckSource = DeckSource.OWN,
     @ColumnInfo(name = "created_at")
     val createdAt: Long,
+    val description: String? = null,
+    @ColumnInfo(name = "remote_id")
+    val remoteId: String? = null,
+    @ColumnInfo(name = "remote_version")
+    val remoteVersion: Int? = null,
 ) {
     companion object {
         const val LANGUAGE_BASHKIR = "ba"

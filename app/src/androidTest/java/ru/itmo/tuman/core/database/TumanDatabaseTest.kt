@@ -1,5 +1,6 @@
 package ru.itmo.tuman.core.database
 
+import android.database.sqlite.SQLiteConstraintException
 import androidx.room.Room
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -110,6 +111,55 @@ class TumanDatabaseTest {
         assertNull(db.deckDao().getById(deckId))
         assertNull(db.cardDao().getById(cardId))
         assertTrue(db.reviewDao().getByCard(cardId).isEmpty())
+    }
+
+    @Test
+    fun catalogDeckKeepsRemoteFields() = runBlocking {
+        val deckId = db.deckDao().insert(
+            DeckEntity(
+                title = "Буквы",
+                source = DeckSource.CATALOG,
+                createdAt = NOW,
+                description = "Описание",
+                remoteId = "ba-letters",
+                remoteVersion = 2,
+            ),
+        )
+        val cardId = db.cardDao().insert(
+            CardEntity(
+                deckId = deckId,
+                front = "Ң ң",
+                back = "буква",
+                exampleTranslation = "перевод",
+                pronunciation = "[ң]",
+                notes = "заметка",
+                remoteId = "ba-letters-0002",
+                due = NOW,
+            ),
+        )
+
+        val deck = db.deckDao().getById(deckId)!!
+        assertEquals("ba-letters", deck.remoteId)
+        assertEquals(2, deck.remoteVersion)
+        val card = db.cardDao().getById(cardId)!!
+        assertEquals("ba-letters-0002", card.remoteId)
+        assertEquals("[ң]", card.pronunciation)
+        assertEquals("перевод", card.exampleTranslation)
+    }
+
+    @Test(expected = SQLiteConstraintException::class)
+    fun sameCatalogDeckCannotBeSavedTwice() = runBlocking {
+        db.deckDao().insert(DeckEntity(title = "А", createdAt = NOW, remoteId = "ba-letters"))
+        db.deckDao().insert(DeckEntity(title = "Б", createdAt = NOW, remoteId = "ba-letters"))
+        Unit
+    }
+
+    @Test
+    fun ownDecksWithoutRemoteIdDoNotConflict() = runBlocking {
+        db.deckDao().insert(DeckEntity(title = "Мой 1", createdAt = NOW))
+        db.deckDao().insert(DeckEntity(title = "Мой 2", createdAt = NOW))
+
+        assertEquals(2, db.deckDao().observeAll().first().size)
     }
 
     private companion object {
