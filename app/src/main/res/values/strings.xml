@@ -1,3 +1,27 @@
 <resources>
-    <string name="app_name">Tuman</string>
+    <string name="app_name">Туман</string>
+
+    <!-- Общее -->
+    <string name="action_back">Назад</string>
+    <string name="stub_in_progress">Экран в разработке</string>
+
+    <!-- Главный экран -->
+    <string name="home_start_review">Начать повторение</string>
+    <string name="home_decks">Наборы</string>
+    <string name="home_catalog">Каталог</string>
+    <string name="home_progress">Прогресс</string>
+    <string name="home_settings">Настройки</string>
+
+    <!-- Наборы и карточки -->
+    <string name="decks_title">Наборы</string>
+    <string name="decks_open_sample">Открыть пример набора</string>
+    <string name="deck_title">Набор №%1$d</string>
+    <string name="deck_add_card">Добавить карточку</string>
+    <string name="card_edit_title">Карточка</string>
+
+    <!-- Остальные экраны -->
+    <string name="catalog_title">Каталог</string>
+    <string name="review_title">Повторение</string>
+    <string name="progress_title">Прогресс</string>
+    <string name="settings_title">Настройки</string>
 </resources>
