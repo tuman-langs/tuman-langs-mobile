@@ -1405,8 +1405,42 @@ const TestMode = (() => {
   });
   if (location.hash === "#test") addEventListener("load", open);
 
-  return { open, close };
+  return { open, close, SCREENS };
 })();
+</script>
+
+<!-- ================= ССЫЛКИ НА ЭКРАНЫ (задача #15) =================
+     У каждого экрана свой адрес: index.html#<id>, например #back или #catalog-offline.
+     id берутся из той же таблицы SCREENS, что и в режиме проверки; список — в design/README.md. -->
+<style>
+  figure.shot.target .phone { outline: 4px solid var(--terra); outline-offset: 6px; }
+  figure.shot { scroll-margin-top: 24px; }
+  .anchor { color: var(--muted); font-size: 12px; text-decoration: none; font-weight: 700; }
+  .anchor:hover { color: var(--green); }
+</style>
+<script>
+  (() => {
+    document.querySelectorAll("figure.shot").forEach(fig => {
+      const b = fig.querySelector("figcaption b");
+      const id = TestMode.SCREENS[b.textContent.trim()];
+      if (!id) return;
+      fig.id = id;
+      // маленькая ссылка «#id» под названием экрана — чтобы разработчик мог скопировать адрес.
+      // Ставим после <b>, а не внутрь: по тексту <b> режим проверки находит экраны.
+      b.insertAdjacentHTML("afterend", `<a class="anchor" href="#${id}">#${id}</a> `);
+    });
+    function show() {
+      const id = location.hash.slice(1);
+      if (!id || id === "test") return;
+      const target = document.getElementById(id);
+      if (!target) return;
+      document.querySelectorAll("figure.shot.target").forEach(f => f.classList.remove("target"));
+      if (target.matches("figure.shot")) target.classList.add("target");
+      target.scrollIntoView({ block: "start" });
+    }
+    addEventListener("hashchange", show);
+    addEventListener("load", show);
+  })();
 </script>
 </body>
 </html>
