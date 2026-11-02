@@ -193,9 +193,14 @@
   .flash .ex b { display: block; font-size: 15px; }
   .flash .divider { width: 60%; height: 1px; background: var(--sand-2); margin: 16px 0; }
   .flash .tap { position: absolute; bottom: 16px; font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-  .grades { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-  .grade { border-radius: 14px; padding: 10px 0 8px; display: flex; flex-direction: column; align-items: center; gap: 1px; font-weight: 800; font-size: 12px; white-space: nowrap; }
-  .grade small { font-size: 11px; font-weight: 700; opacity: .8; }
+  /* 2×2, а не в ряд: по итогам проверки на людях (#3) кнопки были мелкими и заметными не сразу */
+  .grades { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .grade { border-radius: 14px; min-height: 50px; padding: 0 14px; display: flex; align-items: center; justify-content: space-between; gap: 6px; font-weight: 800; font-size: 16px; white-space: nowrap; }
+  .grade small { font-size: 12px; font-weight: 700; opacity: .8; }
+  .grade-q { font-size: 16px; font-weight: 800; text-align: center; }
+  .grade-help { display: flex; flex-direction: column; gap: 8px; margin: 0 0 14px; }
+  .grade-help > div { display: flex; align-items: center; gap: 10px; font-size: 14px; line-height: 1.3; }
+  .grade-help .grade { min-height: 34px; min-width: 96px; justify-content: center; font-size: 14px; flex: none; }
   .g1 { background: var(--terra-soft); color: var(--terra); }
   .g2 { background: var(--amber-soft); color: var(--amber); }
   .g3 { background: var(--green-soft); color: var(--green); }
@@ -393,7 +398,7 @@
       <div class="kit-box">
         <h3>Прочее</h3>
         <div class="vstack" style="gap:14px">
-          <div class="hstack"><span class="chip green">✓ Скачан</span><span class="chip terra"><svg class="i" style="width:14px;height:14px"><use href="#i-flame"/></svg>5 дней</span><span class="chip amber">+120 XP</span><span class="chip sand">Новый</span></div>
+          <div class="hstack"><span class="chip green">✓ Скачан</span><span class="chip terra"><svg class="i" style="width:14px;height:14px"><use href="#i-flame"/></svg>6 дней</span><span class="chip amber">+120 XP</span><span class="chip sand">Новый</span></div>
           <div class="hstack"><span class="toggle on"></span><span class="toggle"></span><span class="small muted">Выключатель</span></div>
           <div class="bar"><i style="width:60%"></i></div>
           <div class="banner err"><svg class="i"><use href="#i-wifi-off"/></svg><span><b>Нет интернета.</b> Каталог недоступен, скачанные наборы работают.</span></div>
@@ -435,7 +440,7 @@
       <figure class="shot">
         <div class="phone"><div class="scr">
           <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i></span></div>
-          <div class="appbar"><span class="logo" style="font-size:20px;color:var(--green);flex:1">ТУМАН</span><span class="chip terra"><svg class="i" style="width:14px;height:14px"><use href="#i-flame"/></svg>5</span><span class="chip amber">340 XP</span><button class="icon-btn"><svg class="i"><use href="#i-gear"/></svg></button></div>
+          <div class="appbar"><span class="logo" style="font-size:20px;color:var(--green);flex:1">ТУМАН</span><span class="chip terra"><svg class="i" style="width:14px;height:14px"><use href="#i-flame"/></svg>6</span><span class="chip amber">520 XP</span><button class="icon-btn"><svg class="i"><use href="#i-gear"/></svg></button></div>
           <div class="content">
             <div class="card" style="padding:0;overflow:hidden">
               <img class="mascot" style="height:130px;border-radius:0" src="https://karpenkoa07.github.io/tuman2026/%D1%82%D1%83%D0%BB%D0%BF%D0%B0%D1%80%D0%B2%D0%B8%D0%B7%D0%B8%D1%82%D0%BA%D0%B0.jpg" alt="Тулпар">
@@ -838,13 +843,42 @@
           <div class="appbar"><button class="icon-btn"><svg class="i"><use href="#i-close"/></svg></button><div class="bar grow"><i style="width:28%"></i></div><span class="small bold muted">5/18</span></div>
           <div class="content" style="padding-bottom:20px">
             <div class="flash">
+              <div class="word" style="font-size:32px">ҡояш</div>
+              <div class="divider"></div>
+              <div class="tr">солнце</div>
+            </div>
+          </div>
+          <div class="scrim bottom">
+            <div class="sheet">
+              <div class="grip"></div>
+              <div class="bold" style="font-size:19px;padding:0 4px 6px">Как оценивать ответ</div>
+              <p class="small muted" style="margin:0 4px 14px;line-height:1.4">Оценивайте, <b style="color:var(--ink)">насколько легко вспомнили</b> перевод, а не насколько слово сложное. От оценки зависит, когда карточка покажется снова.</p>
+              <div class="grade-help">
+                <div><span class="grade g1">не помню</span>не вспомнил(а) — покажем через минуту</div>
+                <div><span class="grade g2">трудно</span>вспомнил(а) с большим трудом</div>
+                <div><span class="grade g3">хорошо</span>вспомнил(а), немного подумав</div>
+                <div><span class="grade g4">легко</span>вспомнил(а) сразу</div>
+              </div>
+              <button class="btn primary block">Понятно</button>
+            </div>
+          </div>
+        </div></div>
+        <figcaption><b>Подсказка к оценкам</b><span class="tag st">первое повторение</span><span class="tag ft">ФТ-6</span> Показывается один раз — при первом повторении в приложении. Добавлена по итогам проверки на людях: оценки путали с трудностью слова.</figcaption>
+      </figure>
+
+      <figure class="shot">
+        <div class="phone"><div class="scr">
+          <div class="sb"><span>9:41</span><span class="dots"><i></i><i></i></span></div>
+          <div class="appbar"><button class="icon-btn"><svg class="i"><use href="#i-close"/></svg></button><div class="bar grow"><i style="width:28%"></i></div><span class="small bold muted">5/18</span></div>
+          <div class="content" style="padding-bottom:20px">
+            <div class="flash">
               <span class="chip sand" style="position:absolute;top:16px;left:16px">Базовые слова</span>
               <div class="word" style="font-size:32px">ҡояш</div>
               <div class="divider"></div>
               <div class="tr">солнце</div>
               <div class="ex"><b>Ҡояш сыҡты.</b><span class="muted">Солнце взошло.</span></div>
             </div>
-            <div class="small muted bold" style="text-align:center">Насколько легко вспомнили?</div>
+            <div class="grade-q">Насколько легко вспомнили?</div>
             <div class="grades">
               <button class="grade g1">не помню<small>&lt;1 мин</small></button>
               <button class="grade g2">трудно<small>1 д</small></button>
@@ -855,6 +889,7 @@
         </div></div>
         <figcaption><b>Обратная сторона + оценка</b><span class="tag ft">ФТ-6</span><span class="tag ft">ФТ-7</span> Интервалы под кнопками считает модуль FSRS. Переход к следующей ≤ 1 с.</figcaption>
       </figure>
+
 
       <figure class="shot">
         <div class="phone"><div class="scr">
@@ -895,8 +930,8 @@
           <div class="appbar"><h2>Прогресс</h2><span class="chip amber">520 XP</span></div>
           <div class="content" style="gap:10px">
             <div class="card hstack">
-              <div class="ring" style="--p:90"><div><b>18</b><span>из 20</span></div></div>
-              <div class="grow"><div class="bold">Дневная цель</div><div class="small muted">Ещё 2 карточки</div><button class="btn sm ghost" style="padding:0;height:28px">Изменить цель</button></div>
+              <div class="ring" style="--p:40"><div><b>8</b><span>из 20</span></div></div>
+              <div class="grow"><div class="bold">Дневная цель</div><div class="small muted">Ещё 12 карточек до цели</div><button class="btn sm ghost" style="padding:0;height:28px">Изменить цель</button></div>
             </div>
             <div class="card">
               <div class="hstack between" style="margin-bottom:10px"><span class="bold hstack" style="gap:6px"><svg class="i" style="color:var(--terra)"><use href="#i-flame"/></svg>Серия 6 дней</span><span class="small muted">лучшая — 9</span></div>
@@ -1150,6 +1185,7 @@ const TestMode = (() => {
     "Каталог · ошибка загрузки набора": "catalog-error",
     "Лицевая сторона": "front",
     "Обратная сторона + оценка": "back",
+    "Подсказка к оценкам": "back-hint",
     "Итог сессии": "summary",
     "Прогресс": "progress",
     "Все достижения": "achievements",
@@ -1196,7 +1232,8 @@ const TestMode = (() => {
     "catalog-loading": [],
     "catalog-offline": [{ t: "Повторить", go: "catalog-offline", toast: "Нет сети. Попробуйте позже" }, { t: "Мои наборы", go: "decks" }],
     "catalog-error": [{ t: "Повторить", do: "download" }],
-    "front": [{ t: "Показать ответ", go: "back" }, { s: ".flash", go: "back" }, { i: "#i-close", go: "home" }],
+    "front": [{ t: "Показать ответ", go: "back-hint" }, { s: ".flash", go: "back-hint" }, { i: "#i-close", go: "home" }],
+    "back-hint": [{ t: "Понятно", go: "back" }],
     "back": [{ s: ".grade", go: "summary" }, { i: "#i-close", go: "home" }],
     "summary": [{ t: "К прогрессу", go: "progress" }, { t: "На главную", go: "home" }],
     "progress": [{ t: "Все", go: "achievements" }],
@@ -1347,12 +1384,12 @@ const TestMode = (() => {
     document.body.classList.add("tm-open");
     el("tm").classList.add("on");
     go(current || "home");
-    if (location.hash !== "#test") history.replaceState(null, "", "#test");
+    try { if (location.hash !== "#test") history.replaceState(null, "", "#test"); } catch (e) { /* то же */ }
   }
   function close() {
     document.body.classList.remove("tm-open");
     el("tm").classList.remove("on");
-    history.replaceState(null, "", location.pathname + location.search);
+    try { history.replaceState(null, "", location.pathname + location.search); } catch (e) { /* в некоторых просмотрщиках адрес менять нельзя */ }
   }
 
   el("tm-stage").addEventListener("click", onClick);
