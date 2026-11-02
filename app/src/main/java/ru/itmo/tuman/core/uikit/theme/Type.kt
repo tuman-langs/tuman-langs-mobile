@@ -1,4 +1,4 @@
-package ru.itmo.tuman.ui.theme
+package ru.itmo.tuman.core.uikit.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
