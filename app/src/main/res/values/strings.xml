@@ -7,11 +7,14 @@
     <string name="offline_title">Нет интернета.</string>
     <string name="offline_text">Каталог недоступен, скачанные наборы работают.</string>
 
+    <!-- Вкладки нижней панели -->
+    <string name="tab_home">Главная</string>
+    <string name="tab_decks">Наборы</string>
+    <string name="tab_catalog">Каталог</string>
+    <string name="tab_progress">Прогресс</string>
+
     <!-- Главный экран -->
     <string name="home_start_review">Начать повторение</string>
-    <string name="home_decks">Наборы</string>
-    <string name="home_catalog">Каталог</string>
-    <string name="home_progress">Прогресс</string>
     <string name="home_settings">Настройки</string>
 
     <!-- Наборы и карточки -->
