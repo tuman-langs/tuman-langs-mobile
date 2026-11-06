@@ -4,6 +4,8 @@
     <!-- Общее -->
     <string name="action_back">Назад</string>
     <string name="stub_in_progress">Экран в разработке</string>
+    <string name="offline_title">Нет интернета.</string>
+    <string name="offline_text">Каталог недоступен, скачанные наборы работают.</string>
 
     <!-- Главный экран -->
     <string name="home_start_review">Начать повторение</string>
