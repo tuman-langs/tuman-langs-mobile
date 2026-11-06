@@ -3,6 +3,7 @@ package ru.itmo.tuman.core.uikit
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
@@ -18,9 +19,10 @@ import androidx.compose.ui.unit.dp
 fun StubScreen(
     title: String,
     onBack: (() -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {},
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Scaffold(topBar = { TumanTopBar(title = title, onBack = onBack) }) { innerPadding ->
+    Scaffold(topBar = { TumanTopBar(title = title, onBack = onBack, actions = actions) }) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()

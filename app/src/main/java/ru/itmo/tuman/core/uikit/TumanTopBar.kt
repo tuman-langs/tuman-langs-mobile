@@ -1,5 +1,6 @@
 package ru.itmo.tuman.core.uikit
 
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -12,12 +13,16 @@ import androidx.compose.ui.res.stringResource
 import ru.itmo.tuman.R
 
 /**
- * Верхняя панель экрана: заголовок и, если передан [onBack], стрелка «Назад».
+ * Верхняя панель экрана: заголовок, стрелка «Назад», если передан [onBack], и кнопки справа ([actions]).
  * Системная кнопка «Назад» работает и без неё — её обрабатывает навигация.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TumanTopBar(title: String, onBack: (() -> Unit)? = null) {
+fun TumanTopBar(
+    title: String,
+    onBack: (() -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
     TopAppBar(
         title = { Text(title) },
         navigationIcon = {
@@ -30,5 +35,6 @@ fun TumanTopBar(title: String, onBack: (() -> Unit)? = null) {
                 }
             }
         },
+        actions = actions,
     )
 }

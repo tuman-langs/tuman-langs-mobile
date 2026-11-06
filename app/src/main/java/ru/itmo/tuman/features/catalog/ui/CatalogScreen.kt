@@ -8,8 +8,8 @@ import ru.itmo.tuman.core.uikit.StubScreen
 
 /** Заглушка: каталог готовых наборов с сервера. */
 @Composable
-fun CatalogScreen(onBack: () -> Unit) {
-    StubScreen(title = stringResource(R.string.catalog_title), onBack = onBack) {
+fun CatalogScreen() {
+    StubScreen(title = stringResource(R.string.catalog_title)) {
         Text(stringResource(R.string.stub_in_progress))
     }
 }

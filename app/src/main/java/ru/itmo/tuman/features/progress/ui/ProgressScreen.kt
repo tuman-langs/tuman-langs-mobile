@@ -8,8 +8,8 @@ import ru.itmo.tuman.core.uikit.StubScreen
 
 /** Заглушка: серия дней, XP и достижения. */
 @Composable
-fun ProgressScreen(onBack: () -> Unit) {
-    StubScreen(title = stringResource(R.string.progress_title), onBack = onBack) {
+fun ProgressScreen() {
+    StubScreen(title = stringResource(R.string.progress_title)) {
         Text(stringResource(R.string.stub_in_progress))
     }
 }
