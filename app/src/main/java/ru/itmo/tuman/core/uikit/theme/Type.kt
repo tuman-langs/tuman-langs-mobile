@@ -1,14 +1,31 @@
 package ru.itmo.tuman.core.uikit.theme
 
 import androidx.compose.material3.Typography
+import androidx.compose.ui.text.ExperimentalTextApi
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import ru.itmo.tuman.R
 
-// Пока файлов Nunito нет в res/font, здесь системный шрифт.
-// Когда они появятся, изменится только эта строка: размеры и компоненты останутся прежними.
-val TumanFontFamily: FontFamily = FontFamily.Default
+// Nunito лежит в res/font одним вариативным файлом: в нём есть все насыщенности от 200 до 1000.
+// Шрифт внутри приложения работает без интернета. Вариативные шрифты Android умеет с API 26.
+@OptIn(ExperimentalTextApi::class) // настройки вариативного шрифта в нашей версии Compose ещё экспериментальные
+private fun nunito(weight: FontWeight) = Font(
+    resId = R.font.nunito_variable,
+    weight = weight,
+    variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight)),
+)
+
+val TumanFontFamily: FontFamily = FontFamily(
+    nunito(FontWeight.Normal),
+    nunito(FontWeight.SemiBold),
+    nunito(FontWeight.Bold),
+    nunito(FontWeight.ExtraBold),
+    nunito(FontWeight.Black),
+)
 
 private fun tumanStyle(size: Int, weight: FontWeight) = TextStyle(
     fontFamily = TumanFontFamily,
