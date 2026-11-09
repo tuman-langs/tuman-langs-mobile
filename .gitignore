@@ -42,3 +42,5 @@ Thumbs.db
 .claude/settings.local.json
 CLAUDE.local.md
 
+# Служебная папка компилятора Kotlin
+.kotlin/

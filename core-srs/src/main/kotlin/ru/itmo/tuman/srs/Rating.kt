@@ -2,17 +2,19 @@ package ru.itmo.tuman.srs
 
 /**
  * Оценка ответа пользователя — четыре кнопки на экране повторения (ФТ-6).
+ *
+ * @property grade номер оценки G в формулах FSRS: 1 — «не помню» … 4 — «легко».
  */
-enum class Rating {
+enum class Rating(val grade: Int) {
     /** «Не помню» */
-    AGAIN,
+    AGAIN(1),
 
     /** «Трудно» */
-    HARD,
+    HARD(2),
 
     /** «Хорошо» */
-    GOOD,
+    GOOD(3),
 
     /** «Легко» */
-    EASY,
+    EASY(4),
 }

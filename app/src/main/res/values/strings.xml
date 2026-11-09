@@ -1,3 +1,58 @@
 <resources>
-    <string name="app_name">Tuman</string>
+    <string name="app_name">Туман</string>
+
+    <!-- Общее -->
+    <string name="action_back">Назад</string>
+    <string name="action_save">Сохранить</string>
+    <string name="action_cancel">Отмена</string>
+    <string name="action_delete">Удалить</string>
+    <string name="stub_in_progress">Экран в разработке</string>
+    <string name="offline_title">Нет интернета.</string>
+    <string name="offline_text">Каталог недоступен, скачанные наборы работают.</string>
+
+    <!-- Вкладки нижней панели -->
+    <string name="tab_home">Главная</string>
+    <string name="tab_decks">Наборы</string>
+    <string name="tab_catalog">Каталог</string>
+    <string name="tab_progress">Прогресс</string>
+
+    <!-- Главный экран -->
+    <string name="home_start_review">Начать повторение</string>
+    <string name="home_settings">Настройки</string>
+
+    <!-- Наборы и карточки -->
+    <string name="decks_title">Наборы</string>
+    <string name="decks_fab">Набор</string>
+    <string name="decks_empty_title">Наборов пока нет</string>
+    <string name="decks_empty_text">Создайте набор или скачайте готовый из каталога.</string>
+    <string name="decks_create_action">Создать набор</string>
+    <string name="decks_create_title">Новый набор</string>
+    <string name="decks_rename_title">Переименовать набор</string>
+    <string name="decks_name_label">Название</string>
+    <string name="decks_name_error">Введите название</string>
+    <string name="decks_menu_description">Меню набора</string>
+    <string name="decks_menu_rename">Переименовать</string>
+    <string name="decks_menu_delete">Удалить набор</string>
+    <string name="decks_delete_title">Удалить набор «%1$s»?</string>
+    <string name="decks_delete_text">Будут удалены: %1$s и история повторений. Это нельзя отменить.</string>
+    <string name="decks_source_catalog">%1$s · из каталога</string>
+    <string name="decks_source_own">%1$s · мой набор</string>
+    <string name="decks_error_load">Не удалось загрузить наборы</string>
+    <string name="decks_error_save">Не удалось сохранить набор</string>
+    <string name="decks_error_delete">Не удалось удалить набор</string>
+    <plurals name="decks_card_count">
+        <item quantity="one">%d карточка</item>
+        <item quantity="few">%d карточки</item>
+        <item quantity="many">%d карточек</item>
+        <item quantity="other">%d карточки</item>
+    </plurals>
+    <string name="deck_title">Набор №%1$d</string>
+    <string name="deck_add_card">Добавить карточку</string>
+    <string name="card_edit_title">Карточка</string>
+
+    <!-- Остальные экраны -->
+    <string name="catalog_title">Каталог</string>
+    <string name="review_title">Повторение</string>
+    <string name="progress_title">Прогресс</string>
+    <string name="settings_title">Настройки</string>
 </resources>
