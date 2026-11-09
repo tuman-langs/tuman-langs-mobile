@@ -65,6 +65,16 @@ interface CardDao {
     )
     fun observeByDeckWithReviewCount(deckId: Long): Flow<List<CardWithReviewCount>>
 
+    /** Записывает новое состояние алгоритма после ответа. Текст карточки не трогает. */
+    @Query(
+        """
+        UPDATE cards
+        SET stability = :stability, difficulty = :difficulty, due = :due, last_review = :lastReview
+        WHERE id = :id
+        """,
+    )
+    suspend fun updateSchedule(id: Long, stability: Double, difficulty: Double, due: Long, lastReview: Long)
+
     /** Одна карточка с числом ответов — для редактора. */
     @Query(
         """
