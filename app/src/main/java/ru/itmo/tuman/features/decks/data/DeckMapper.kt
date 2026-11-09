@@ -1,6 +1,7 @@
 package ru.itmo.tuman.features.decks.data
 
 import ru.itmo.tuman.core.database.entity.CardEntity
+import ru.itmo.tuman.core.database.entity.CardWithReviewCount
 import ru.itmo.tuman.core.database.entity.DeckSource
 import ru.itmo.tuman.core.database.entity.DeckWithCardCount
 import ru.itmo.tuman.features.decks.domain.model.Card
@@ -16,12 +17,15 @@ fun DeckWithCardCount.toDomain(): Deck = Deck(
     isFromCatalog = deck.source == DeckSource.CATALOG,
 )
 
-fun CardEntity.toDomain(): Card = Card(
-    id = id,
-    deckId = deckId,
-    front = front,
-    back = back,
-    example = example,
+fun CardWithReviewCount.toDomain(): Card = Card(
+    id = card.id,
+    deckId = card.deckId,
+    front = card.front,
+    back = card.back,
+    example = card.example,
+    due = card.due,
+    lastReview = card.lastReview,
+    reviewCount = reviewCount,
 )
 
 /**

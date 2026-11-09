@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.itmo.tuman.core.database.entity.CardEntity
+import ru.itmo.tuman.core.database.entity.CardWithReviewCount
 
 /** Запросы к таблице карточек. */
 @Dao
@@ -48,4 +49,30 @@ interface CardDao {
     /** Удаляет карточку по id вместе с её историей ответов (каскад). */
     @Query("DELETE FROM cards WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    /**
+     * Карточки набора вместе с числом ответов на каждую.
+     * В запросе участвует и `reviews`, поэтому список обновится и после нового ответа.
+     */
+    @Query(
+        """
+        SELECT cards.*, COUNT(reviews.id) AS review_count
+        FROM cards LEFT JOIN reviews ON reviews.card_id = cards.id
+        WHERE cards.deck_id = :deckId
+        GROUP BY cards.id
+        ORDER BY cards.id
+        """,
+    )
+    fun observeByDeckWithReviewCount(deckId: Long): Flow<List<CardWithReviewCount>>
+
+    /** Одна карточка с числом ответов — для редактора. */
+    @Query(
+        """
+        SELECT cards.*, COUNT(reviews.id) AS review_count
+        FROM cards LEFT JOIN reviews ON reviews.card_id = cards.id
+        WHERE cards.id = :id
+        GROUP BY cards.id
+        """,
+    )
+    suspend fun getByIdWithReviewCount(id: Long): CardWithReviewCount?
 }

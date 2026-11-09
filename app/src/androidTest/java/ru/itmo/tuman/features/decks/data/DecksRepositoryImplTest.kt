@@ -13,6 +13,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import ru.itmo.tuman.core.database.TumanDatabase
+import ru.itmo.tuman.core.database.entity.ReviewEntity
 import ru.itmo.tuman.features.decks.domain.model.Card
 
 /**
@@ -99,6 +100,45 @@ class DecksRepositoryImplTest {
         repository.deleteCard(first)
 
         assertEquals(listOf("эт"), repository.observeCards(deckId).first().map { it.front })
+    }
+
+    @Test
+    fun cardShowsReviewStatusFields() = runBlocking {
+        val deckId = repository.createDeck("Набор")
+        val cardId = repository.saveCard(Card(deckId = deckId, front = "ҡош", back = "птица"))
+
+        // Новая карточка: ответов нет, показать можно сразу
+        val fresh = repository.getCard(cardId)!!
+        assertEquals(NOW, fresh.due)
+        assertNull(fresh.lastReview)
+        assertEquals(0, fresh.reviewCount)
+
+        // Имитируем два ответа, как это сделает повторение (#21)
+        db.reviewDao().insert(ReviewEntity(cardId = cardId, rating = 3, reviewedAt = NOW, intervalDays = 1.0))
+        db.reviewDao().insert(ReviewEntity(cardId = cardId, rating = 4, reviewedAt = NOW + DAY, intervalDays = 3.0))
+        db.cardDao().update(db.cardDao().getById(cardId)!!.copy(lastReview = NOW + DAY, due = NOW + 4 * DAY))
+
+        val reviewed = repository.observeCards(deckId).first().single()
+        assertEquals(2, reviewed.reviewCount)
+        assertEquals(NOW + DAY, reviewed.lastReview)
+        assertEquals(NOW + 4 * DAY, reviewed.due)
+    }
+
+    @Test
+    fun saveCardIgnoresReadOnlyFields() = runBlocking {
+        val deckId = repository.createDeck("Набор")
+        val cardId = repository.saveCard(Card(deckId = deckId, front = "ат", back = "лошадь"))
+
+        // Экран прислал карточку с выдуманными значениями — они не должны попасть в базу
+        repository.saveCard(
+            Card(id = cardId, deckId = deckId, front = "ат", back = "конь", due = 1L, lastReview = 1L, reviewCount = 99),
+        )
+
+        val saved = repository.getCard(cardId)!!
+        assertEquals("конь", saved.back)
+        assertEquals(NOW, saved.due)
+        assertNull(saved.lastReview)
+        assertEquals(0, saved.reviewCount)
     }
 
     private companion object {

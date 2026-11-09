@@ -34,10 +34,10 @@ class DecksRepositoryImpl(
         deckDao.deleteById(id)
 
     override fun observeCards(deckId: Long): Flow<List<Card>> =
-        cardDao.observeByDeck(deckId).map { rows -> rows.map { it.toDomain() } }
+        cardDao.observeByDeckWithReviewCount(deckId).map { rows -> rows.map { it.toDomain() } }
 
     override suspend fun getCard(id: Long): Card? =
-        cardDao.getById(id)?.toDomain()
+        cardDao.getByIdWithReviewCount(id)?.toDomain()
 
     override suspend fun saveCard(card: Card): Long {
         if (card.id == 0L) {
