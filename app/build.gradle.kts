@@ -49,6 +49,8 @@ ksp {
 }
 
 dependencies {
+    // Алгоритм повторения (FSRS) — отдельный модуль на чистом Kotlin
+    implementation(project(":core-srs"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
