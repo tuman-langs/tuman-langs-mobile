@@ -1,6 +1,7 @@
 package ru.itmo.tuman.di
 
 import org.koin.dsl.module
+import ru.itmo.tuman.core.database.di.databaseModule
 import ru.itmo.tuman.features.decks.di.decksModule
 
 /**
@@ -8,5 +9,5 @@ import ru.itmo.tuman.features.decks.di.decksModule
  * например: includes(databaseModule, decksModule).
  */
 val appModule = module {
-    includes(decksModule)
+    includes(databaseModule, decksModule)
 }
