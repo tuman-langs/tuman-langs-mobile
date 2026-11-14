@@ -6,6 +6,7 @@
     <string name="action_save">Сохранить</string>
     <string name="action_cancel">Отмена</string>
     <string name="action_delete">Удалить</string>
+    <string name="action_undo">Отменить</string>
     <string name="stub_in_progress">Экран в разработке</string>
     <string name="offline_title">Нет интернета.</string>
     <string name="offline_text">Каталог недоступен, скачанные наборы работают.</string>
@@ -46,9 +47,43 @@
         <item quantity="many">%d карточек</item>
         <item quantity="other">%d карточки</item>
     </plurals>
-    <string name="deck_title">Набор №%1$d</string>
+
+    <!-- Экран набора -->
     <string name="deck_add_card">Добавить карточку</string>
+    <string name="deck_due_today">%1$d на сегодня</string>
+    <string name="deck_summary">%1$s · выучено %2$d</string>
+    <string name="deck_study">Учить</string>
+    <string name="deck_empty_title">В наборе нет карточек</string>
+    <string name="deck_empty_text">Добавьте первую карточку: слово, перевод и, если хотите, пример.</string>
+    <string name="deck_error_load">Не удалось загрузить карточки</string>
+    <string name="card_status_new">новая</string>
+    <string name="card_status_today">сегодня</string>
+    <string name="card_status_learned">выучена</string>
+    <string name="card_status_in_days">через %1$d д</string>
+
+    <!-- Редактор карточки -->
     <string name="card_edit_title">Карточка</string>
+    <string name="card_edit_title_new">Новая карточка</string>
+    <string name="card_edit_front">Лицевая сторона</string>
+    <string name="card_edit_back">Обратная сторона</string>
+    <string name="card_edit_example">Пример · необязательно</string>
+    <string name="card_edit_field_error">Заполните поле</string>
+    <string name="card_edit_added">Карточка «%1$s» добавлена</string>
+    <string name="card_edit_next_new">Карточку ещё не повторяли</string>
+    <string name="card_edit_next_today">Следующий показ сегодня</string>
+    <plurals name="card_edit_next_in_days">
+        <item quantity="one">Следующий показ через %d день</item>
+        <item quantity="few">Следующий показ через %d дня</item>
+        <item quantity="many">Следующий показ через %d дней</item>
+        <item quantity="other">Следующий показ через %d дня</item>
+    </plurals>
+    <string name="card_edit_review_count">Повторений %1$d</string>
+    <string name="card_edit_delete">Удалить карточку</string>
+    <string name="card_edit_delete_title">Удалить карточку?</string>
+    <string name="card_edit_delete_text">Карточка «%1$s» и история её повторений будут удалены. Это нельзя отменить.</string>
+    <string name="card_edit_error_load">Не удалось загрузить карточку</string>
+    <string name="card_edit_error_save">Не удалось сохранить карточку</string>
+    <string name="card_edit_error_delete">Не удалось удалить карточку</string>
 
     <!-- Остальные экраны -->
     <string name="catalog_title">Каталог</string>
