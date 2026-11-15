@@ -53,7 +53,7 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
         ) {
             composable<HomeRoute> {
                 HomeScreen(
-                    onStartReviewClick = { if (navController.canNavigate()) navController.navigate(ReviewRoute) },
+                    onStartReviewClick = { if (navController.canNavigate()) navController.navigate(ReviewRoute()) },
                     onSettingsClick = { if (navController.canNavigate()) navController.navigate(SettingsRoute) },
                 )
             }
@@ -78,7 +78,24 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
                 CardEditScreen(onBack = goBack)
             }
             composable<CatalogRoute> { CatalogScreen() }
-            composable<ReviewRoute> { ReviewScreen(onBack = goBack) }
+            composable<ReviewRoute> { entry ->
+                val route = entry.toRoute<ReviewRoute>()
+                ReviewScreen(
+                    deckId = route.deckId,
+                    onBack = goBack,
+                    onHome = {
+                        if (navController.canNavigate()) {
+                            navController.navigate(HomeRoute) {
+                                popUpTo<HomeRoute> { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        }
+                    },
+                    onProgress = {
+                        if (navController.canNavigate()) navController.navigate(ProgressRoute)
+                    },
+                )
+            }
             composable<ProgressRoute> { ProgressScreen() }
             composable<SettingsRoute> { SettingsScreen(onBack = goBack) }
         }
