@@ -76,8 +76,10 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
                     onAddCardClick = {
                         if (navController.canNavigate()) navController.navigate(CardEditRoute(deckId = route.deckId))
                     },
-                    // Повторение пока общее для всех наборов: ReviewRoute без deckId (экран Дворак М., #29)
-                    onStudyClick = { if (navController.canNavigate()) navController.navigate(ReviewRoute) },
+                    // «Учить» запускает повторение только этого набора (#29)
+                    onStudyClick = {
+                        if (navController.canNavigate()) navController.navigate(ReviewRoute(deckId = route.deckId))
+                    },
                     onBack = goBack,
                 )
             }
