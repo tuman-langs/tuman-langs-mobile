@@ -26,7 +26,7 @@ data class CardEditRoute(val deckId: Long, val cardId: Long = NEW_CARD) {
 object CatalogRoute
 
 @Serializable
-object ReviewRoute
+data class ReviewRoute(val deckId: Long? = null)
 
 @Serializable
 object ProgressRoute
