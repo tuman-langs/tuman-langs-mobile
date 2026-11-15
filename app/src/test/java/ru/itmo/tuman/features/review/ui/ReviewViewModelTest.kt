@@ -79,9 +79,26 @@ class ReviewViewModelTest {
         answer(Rating.GOOD)
         assertTrue(viewModel.uiState.value.isFinished)
         assertNull(viewModel.uiState.value.currentCard)
-        assertEquals(3, viewModel.uiState.value.answersCount)
-        assertEquals(2, viewModel.uiState.value.correctAnswers)
-        assertEquals(30, viewModel.uiState.value.earnedXp)
+        // Повтор в конце сессии не пишется в базу и не считается в итоге
+        assertEquals(listOf(1L to Rating.AGAIN, 2L to Rating.GOOD), repository.submitted)
+        assertEquals(2, viewModel.uiState.value.answersCount)
+        assertEquals(1, viewModel.uiState.value.correctAnswers)
+        assertEquals(20, viewModel.uiState.value.earnedXp)
+    }
+
+    @Test
+    fun againOnRepeatReturnsCardToQueueAgainWithoutSaving() {
+        answer(Rating.AGAIN)
+        answer(Rating.GOOD)
+        answer(Rating.AGAIN)
+
+        assertEquals(1L, viewModel.uiState.value.currentCard?.id)
+        assertEquals(4, viewModel.uiState.value.total)
+        assertEquals(2, repository.submitted.size)
+
+        answer(Rating.EASY)
+        assertTrue(viewModel.uiState.value.isFinished)
+        assertEquals(2, repository.submitted.size)
     }
 
     @Test

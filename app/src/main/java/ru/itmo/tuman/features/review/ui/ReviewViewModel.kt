@@ -29,6 +29,11 @@ class ReviewViewModel(
     val uiState: StateFlow<ReviewUiState> = _uiState.asStateFlow()
 
     private val sessionCards = mutableListOf<ReviewCard>()
+
+    // Карточки, ответ на которые уже сохранён в этой сессии. Если такая карточка
+    // снова в очереди (после «не помню»), это повтор в конце сессии: ответ не пишем
+    // в базу и не считаем в итоге, чтобы алгоритм и история видели один ответ за день.
+    private val answeredIds = mutableSetOf<Long>()
     private var sessionStarted = false
     private var hintShown = false
 
@@ -79,13 +84,18 @@ class ReviewViewModel(
         _uiState.update { it.copy(isSubmitting = true) }
         viewModelScope.launch {
             try {
-                repository.submitAnswer(card.id, rating, now())
+                val isRepeat = card.id in answeredIds
+                if (!isRepeat) {
+                    repository.submitAnswer(card.id, rating, now())
+                    answeredIds += card.id
+                }
                 if (rating == Rating.AGAIN) sessionCards.add(card)
 
                 val nextPosition = state.position
-                val nextAnswersCount = state.answersCount + 1
-                val nextCorrectAnswers = state.correctAnswers + if (rating == Rating.AGAIN) 0 else 1
-                val nextXp = state.earnedXp + XP_PER_ANSWER
+                val counted = if (isRepeat) 0 else 1
+                val nextAnswersCount = state.answersCount + counted
+                val nextCorrectAnswers = state.correctAnswers + if (isRepeat || rating == Rating.AGAIN) 0 else 1
+                val nextXp = state.earnedXp + XP_PER_ANSWER * counted
                 if (nextPosition >= sessionCards.size) {
                     _uiState.update {
                         it.copy(
