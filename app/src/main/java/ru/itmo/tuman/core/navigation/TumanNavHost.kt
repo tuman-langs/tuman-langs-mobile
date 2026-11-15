@@ -68,14 +68,24 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
                 val route = entry.toRoute<DeckRoute>()
                 DeckScreen(
                     deckId = route.deckId,
+                    onCardClick = { cardId ->
+                        if (navController.canNavigate()) {
+                            navController.navigate(CardEditRoute(deckId = route.deckId, cardId = cardId))
+                        }
+                    },
                     onAddCardClick = {
                         if (navController.canNavigate()) navController.navigate(CardEditRoute(deckId = route.deckId))
+                    },
+                    // «Учить» запускает повторение только этого набора (#29)
+                    onStudyClick = {
+                        if (navController.canNavigate()) navController.navigate(ReviewRoute(deckId = route.deckId))
                     },
                     onBack = goBack,
                 )
             }
-            composable<CardEditRoute> {
-                CardEditScreen(onBack = goBack)
+            composable<CardEditRoute> { entry ->
+                val route = entry.toRoute<CardEditRoute>()
+                CardEditScreen(deckId = route.deckId, cardId = route.cardId, onBack = goBack)
             }
             composable<CatalogRoute> { CatalogScreen() }
             composable<ReviewRoute> { entry ->
