@@ -88,6 +88,36 @@
     <!-- Остальные экраны -->
     <string name="catalog_title">Каталог</string>
     <string name="review_title">Повторение</string>
+    <string name="review_close">Закрыть повторение</string>
+    <string name="review_show_answer">Показать ответ</string>
+    <string name="review_session_finished">Сессия завершена</string>
+    <string name="review_today_done">На сегодня всё</string>
+    <string name="review_empty_text">Карточек для повторения пока нет.</string>
+    <string name="review_go_home">На главную</string>
+    <string name="review_go_progress">К прогрессу</string>
+    <string name="review_hint_title">Как оценивать ответ</string>
+    <string name="review_hint_text">Выберите оценку по тому, насколько легко вы вспомнили ответ. «Не помню» вернёт карточку в конец этой сессии.</string>
+    <string name="review_hint_dismiss">Понятно</string>
+    <string name="review_front_label">Слово</string>
+    <string name="review_back_label">Перевод</string>
+    <string name="review_example_label">Пример</string>
+    <string name="review_error_load">Не удалось загрузить карточки</string>
+    <string name="review_error_save">Не удалось сохранить ответ</string>
+    <string name="review_error_intervals">Не удалось загрузить интервалы повторения</string>
+    <string name="review_answers_count">Карточек: %1$d</string>
+    <string name="review_correct_percent">Верных ответов: %1$d%%</string>
+    <string name="review_xp">+%1$d XP</string>
+    <string name="review_streak_pending">Серия: —</string>
+    <string name="review_position">%1$d/%2$d</string>
+    <string name="review_interval_loading">…</string>
+    <string name="review_interval_less_minute">&lt;1 мин</string>
+    <string name="review_interval_minutes">%1$d мин</string>
+    <string name="review_interval_hours">%1$d ч</string>
+    <string name="review_interval_days">%1$d д</string>
+    <string name="rating_again">не помню</string>
+    <string name="rating_hard">трудно</string>
+    <string name="rating_good">хорошо</string>
+    <string name="rating_easy">легко</string>
     <string name="progress_title">Прогресс</string>
     <string name="settings_title">Настройки</string>
 </resources>
