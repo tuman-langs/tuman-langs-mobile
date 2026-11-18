@@ -17,7 +17,7 @@ interface ReviewRepository {
 
     /**
      * Карточки на сегодня: сначала те, что пора повторить (просроченные первыми),
-     * затем новые — пока не наберётся дневная цель [DAILY_GOAL].
+     * затем новые — пока не наберётся дневная цель из настроек.
      * [deckId] = `null` — из всех наборов.
      */
     fun observeTodayCards(deckId: Long? = null): Flow<List<ReviewCard>>
@@ -32,7 +32,7 @@ interface ReviewRepository {
     suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant)
 
     companion object {
-        /** Дневная цель: сколько карточек за день. Пока константа, настройку добавим позже (#30). */
+        /** Дневная цель по умолчанию. Настоящая цель берётся из настроек (#30, `SettingsRepository`). */
         const val DAILY_GOAL = 20
     }
 }

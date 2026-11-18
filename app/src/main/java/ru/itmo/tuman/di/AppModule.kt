@@ -2,7 +2,9 @@ package ru.itmo.tuman.di
 
 import org.koin.dsl.module
 import ru.itmo.tuman.core.database.di.databaseModule
+import ru.itmo.tuman.core.settings.di.settingsModule
 import ru.itmo.tuman.features.decks.di.decksModule
+import ru.itmo.tuman.features.progress.di.progressModule
 import ru.itmo.tuman.features.review.di.reviewModule
 
 /**
@@ -10,5 +12,5 @@ import ru.itmo.tuman.features.review.di.reviewModule
  * например: includes(databaseModule, decksModule, reviewModule).
  */
 val appModule = module {
-    includes(databaseModule, decksModule, reviewModule)
+    includes(databaseModule, settingsModule, decksModule, reviewModule, progressModule)
 }
