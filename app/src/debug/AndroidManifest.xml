@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Только debug-сборка: команды adb для быстрой проверки напоминания (#32). В релиз не попадает. -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver
+            android:name=".core.reminders.DebugReminderReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="ru.itmo.tuman.debug.REMINDER_NOW" />
+                <action android:name="ru.itmo.tuman.debug.REMINDER_IN" />
+                <action android:name="ru.itmo.tuman.debug.REMINDER_OFF" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

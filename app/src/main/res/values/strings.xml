@@ -120,4 +120,22 @@
     <string name="rating_easy">легко</string>
     <string name="progress_title">Прогресс</string>
     <string name="settings_title">Настройки</string>
+
+    <!-- Ежедневное напоминание (#32) -->
+    <string name="reminder_channel_name">Ежедневные напоминания</string>
+    <string name="reminder_channel_description">Напоминание о карточках на сегодня в выбранное время</string>
+    <string name="reminder_title">Пора повторить карточки</string>
+    <string name="reminder_no_streak">Начни серию сегодня! 🔥</string>
+    <plurals name="reminder_cards">
+        <item quantity="one">%d карточка ждёт повторения.</item>
+        <item quantity="few">%d карточки ждут повторения.</item>
+        <item quantity="many">%d карточек ждут повторения.</item>
+        <item quantity="other">%d карточки ждут повторения.</item>
+    </plurals>
+    <plurals name="reminder_streak">
+        <item quantity="one">Не прерывай серию — %d день! 🔥</item>
+        <item quantity="few">Не прерывай серию — %d дня! 🔥</item>
+        <item quantity="many">Не прерывай серию — %d дней! 🔥</item>
+        <item quantity="other">Не прерывай серию — %d дня! 🔥</item>
+    </plurals>
 </resources>
