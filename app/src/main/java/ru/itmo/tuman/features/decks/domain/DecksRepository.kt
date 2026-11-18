@@ -2,6 +2,7 @@ package ru.itmo.tuman.features.decks.domain
 
 import kotlinx.coroutines.flow.Flow
 import ru.itmo.tuman.features.decks.domain.model.Card
+import ru.itmo.tuman.features.decks.domain.model.CatalogSet
 import ru.itmo.tuman.features.decks.domain.model.Deck
 
 /**
@@ -41,4 +42,16 @@ interface DecksRepository {
 
     /** Удаляет карточку вместе с её историей ответов. */
     suspend fun deleteCard(id: Long)
+
+    /**
+     * Сохраняет набор из каталога и возвращает его id в базе. Всё — одной транзакцией:
+     * - такого набора ещё нет → создаёт набор и карточки;
+     * - набор уже скачан, версия та же (или старее) → ничего не меняет;
+     * - версия новее → обновляет текст карточек, сохраняя их прогресс и историю ответов,
+     *   добавляет новые карточки и удаляет те, которых в наборе больше нет.
+     */
+    suspend fun importCatalogSet(set: CatalogSet): Long
+
+    /** Какие наборы каталога уже скачаны и какой версии: `remoteId` → `version`. Для «✓ Скачан» и «Обновить». */
+    fun observeDownloadedVersions(): Flow<Map<String, Int>>
 }
