@@ -87,7 +87,13 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
                 val route = entry.toRoute<CardEditRoute>()
                 CardEditScreen(deckId = route.deckId, cardId = route.cardId, onBack = goBack)
             }
-            composable<CatalogRoute> { CatalogScreen() }
+            composable<CatalogRoute> {
+                CatalogScreen(
+                    onMyDecksClick = {
+                        if (navController.canNavigate()) navController.openTab(DecksRoute)
+                    },
+                )
+            }
             composable<ReviewRoute> { entry ->
                 val route = entry.toRoute<ReviewRoute>()
                 ReviewScreen(

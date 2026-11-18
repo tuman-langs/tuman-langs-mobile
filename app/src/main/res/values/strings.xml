@@ -87,6 +87,28 @@
 
     <!-- Остальные экраны -->
     <string name="catalog_title">Каталог</string>
+    <string name="catalog_language_name">Башкирский язык</string>
+    <string name="catalog_offline_title">Нет интернета</string>
+    <string name="catalog_offline_text">Каталог загружается только по сети. Скачанные наборы и повторение работают без интернета.</string>
+    <plurals name="catalog_sets_count">
+        <item quantity="one">%d набор</item>
+        <item quantity="few">%d набора</item>
+        <item quantity="many">%d наборов</item>
+        <item quantity="other">%d набора</item>
+    </plurals>
+    <string name="catalog_server_waking">Сервер просыпается…</string>
+    <string name="catalog_retry">Повторить</string>
+    <string name="catalog_my_decks">Мои наборы</string>
+    <string name="catalog_load_error_title">Не удалось загрузить каталог</string>
+    <string name="catalog_load_error_text">Проверьте подключение и попробуйте ещё раз.</string>
+    <string name="catalog_offline_retry_text">Каталог недоступен без интернета. Скачанные наборы работают.</string>
+    <string name="catalog_empty_title">В каталоге пока нет наборов</string>
+    <string name="catalog_empty_text">Попробуйте обновить список позже.</string>
+    <string name="catalog_download">Скачать</string>
+    <string name="catalog_update">Обновить</string>
+    <string name="catalog_downloaded">✓ Скачан</string>
+    <string name="catalog_download_error">Не удалось скачать «%1$s». Попробуйте ещё раз.</string>
+    <string name="catalog_versions_error">Не удалось проверить, какие наборы уже скачаны.</string>
     <string name="review_title">Повторение</string>
     <string name="review_close">Закрыть повторение</string>
     <string name="review_show_answer">Показать ответ</string>
