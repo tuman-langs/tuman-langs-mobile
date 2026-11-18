@@ -30,7 +30,7 @@ class DecksRepositoryImplTest {
     fun setUp() {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         db = Room.inMemoryDatabaseBuilder(context, TumanDatabase::class.java).build()
-        repository = DecksRepositoryImpl(db.deckDao(), db.cardDao(), now = { NOW })
+        repository = DecksRepositoryImpl(db, now = { NOW })
     }
 
     @After
