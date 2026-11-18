@@ -1,7 +1,11 @@
 package ru.itmo.tuman.features.review.data
 
 import androidx.room.withTransaction
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import ru.itmo.tuman.core.database.TumanDatabase
 import ru.itmo.tuman.core.database.entity.CardEntity
@@ -21,11 +25,14 @@ import java.time.ZoneId
 /**
  * Реализация [ReviewRepository]: база Room + алгоритм из `core-srs`.
  *
+ * @param dailyGoal дневная цель из настроек (#30): сколько карточек в списке «на сегодня».
  * @param clock текущее время; в тестах подставляем фиксированное.
  * @param zone часовой пояс телефона — по нему считается, где кончается «сегодня».
  */
+@OptIn(ExperimentalCoroutinesApi::class)
 class ReviewRepositoryImpl(
     private val db: TumanDatabase,
+    private val dailyGoal: Flow<Int> = flowOf(DAILY_GOAL),
     private val clock: () -> Instant = Instant::now,
     private val zone: () -> ZoneId = ZoneId::systemDefault,
 ) : ReviewRepository {
@@ -38,15 +45,16 @@ class ReviewRepositoryImpl(
     private fun startOfNextDayMillis(): Long =
         DueCards.startOfNextDay(clock(), zone()).toEpochMilli()
 
+    // Поменяли цель в настройках — список пересоберётся с новым лимитом
     override fun observeTodayCards(deckId: Long?): Flow<List<ReviewCard>> =
-        reviewDao.observeTodayCards(startOfNextDayMillis(), deckId, DAILY_GOAL)
+        dailyGoal.flatMapLatest { goal -> reviewDao.observeTodayCards(startOfNextDayMillis(), deckId, goal) }
             .map { rows -> rows.map { it.toReviewCard() } }
 
     override fun observeTodayCount(): Flow<TodayCount> =
-        reviewDao.observeTodayCounts(startOfNextDayMillis()).map { counts ->
+        combine(reviewDao.observeTodayCounts(startOfNextDayMillis()), dailyGoal) { counts, goal ->
             // Те же правила, что у списка: сначала карточки на повторение, новые — на остаток цели
-            val due = counts.dueCount.coerceAtMost(DAILY_GOAL)
-            val new = counts.newCount.coerceAtMost(DAILY_GOAL - due)
+            val due = counts.dueCount.coerceAtMost(goal)
+            val new = counts.newCount.coerceAtMost(goal - due)
             TodayCount(due = due, new = new)
         }
 

@@ -7,6 +7,7 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import ru.itmo.tuman.core.database.dao.CardDao
 import ru.itmo.tuman.core.database.dao.DeckDao
+import ru.itmo.tuman.core.database.dao.ProgressDao
 import ru.itmo.tuman.core.database.dao.ReviewDao
 import ru.itmo.tuman.core.database.entity.CardEntity
 import ru.itmo.tuman.core.database.entity.DeckEntity
@@ -32,6 +33,7 @@ abstract class TumanDatabase : RoomDatabase() {
     abstract fun deckDao(): DeckDao
     abstract fun cardDao(): CardDao
     abstract fun reviewDao(): ReviewDao
+    abstract fun progressDao(): ProgressDao
 
     companion object {
         private const val DATABASE_NAME = "tuman.db"
