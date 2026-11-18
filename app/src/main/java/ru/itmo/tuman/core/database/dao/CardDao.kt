@@ -65,6 +65,36 @@ interface CardDao {
     )
     fun observeByDeckWithReviewCount(deckId: Long): Flow<List<CardWithReviewCount>>
 
+    /** Все карточки набора разом — для сопоставления при обновлении набора из каталога. */
+    @Query("SELECT * FROM cards WHERE deck_id = :deckId")
+    suspend fun getByDeck(deckId: Long): List<CardEntity>
+
+    /**
+     * Обновляет текст карточки из каталога. Поля алгоритма (stability, difficulty, due,
+     * last_review) не трогает — прогресс повторения сохраняется.
+     */
+    @Query(
+        """
+        UPDATE cards
+        SET front = :front, back = :back, example = :example,
+            example_translation = :exampleTranslation, pronunciation = :pronunciation, notes = :notes
+        WHERE id = :id
+        """,
+    )
+    suspend fun updateCatalogText(
+        id: Long,
+        front: String,
+        back: String,
+        example: String?,
+        exampleTranslation: String?,
+        pronunciation: String?,
+        notes: String?,
+    )
+
+    /** Удаляет карточки по списку id (с их историей — каскад). */
+    @Query("DELETE FROM cards WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Long>)
+
     /** Записывает новое состояние алгоритма после ответа. Текст карточки не трогает. */
     @Query(
         """

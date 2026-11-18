@@ -1,21 +1,27 @@
 package ru.itmo.tuman.core.settings
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
-import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
 import java.io.File
 import java.time.LocalTime
 
-@OptIn(ExperimentalCoroutinesApi::class)
+/**
+ * Настройки на DataStore. Тест на эмуляторе, а не юнит-тест: на Windows DataStore
+ * не может переименовать временный файл при записи («Unable to rename … .tmp»),
+ * и `./gradlew test` падал бы у всех, кто работает на Windows. На телефоне такой проблемы нет.
+ */
+@RunWith(AndroidJUnit4::class)
 class DataStoreSettingsRepositoryTest {
 
     @get:Rule
@@ -25,9 +31,11 @@ class DataStoreSettingsRepositoryTest {
     private fun open(file: File, scope: CoroutineScope) =
         DataStoreSettingsRepository(PreferenceDataStoreFactory.create(scope = scope) { file })
 
+    private fun newScope() = CoroutineScope(Dispatchers.IO + SupervisorJob())
+
     @Test
-    fun defaultsWhenNothingSaved() = runTest {
-        val scope = CoroutineScope(UnconfinedTestDispatcher(testScheduler) + SupervisorJob())
+    fun defaultsWhenNothingSaved() = runBlocking {
+        val scope = newScope()
         val settings = open(File(folder.root, "a.preferences_pb"), scope).settings.first()
 
         assertEquals(UserSettings(), settings)
@@ -38,9 +46,9 @@ class DataStoreSettingsRepositoryTest {
 
     /** «После перезапуска приложения цель на месте»: закрыли хранилище, открыли заново тот же файл. */
     @Test
-    fun valuesSurviveRestart() = runTest {
+    fun valuesSurviveRestart() = runBlocking {
         val file = File(folder.root, "b.preferences_pb")
-        val firstRun = CoroutineScope(UnconfinedTestDispatcher(testScheduler) + SupervisorJob())
+        val firstRun = newScope()
         open(file, firstRun).apply {
             setDailyGoal(30)
             setOnboardingDone()
@@ -49,7 +57,7 @@ class DataStoreSettingsRepositoryTest {
         }
         firstRun.cancel()
 
-        val secondRun = CoroutineScope(UnconfinedTestDispatcher(testScheduler) + SupervisorJob())
+        val secondRun = newScope()
         val restored = open(file, secondRun).settings.first()
 
         assertEquals(
