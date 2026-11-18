@@ -8,6 +8,7 @@ import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 import ru.itmo.tuman.core.database.entity.DeckEntity
 import ru.itmo.tuman.core.database.entity.DeckWithCardCount
+import ru.itmo.tuman.core.database.entity.DownloadedVersion
 
 /**
  * Запросы к таблице наборов.
@@ -56,4 +57,16 @@ interface DeckDao {
     /** Удаляет набор по id вместе с карточками и историей (каскад). */
     @Query("DELETE FROM decks WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    /** Набор каталога по его id в каталоге (`ba-letters`); `null` — ещё не скачан. */
+    @Query("SELECT * FROM decks WHERE remote_id = :remoteId")
+    suspend fun getByRemoteId(remoteId: String): DeckEntity?
+
+    /** Обновляет название, описание и версию набора каталога после его обновления. */
+    @Query("UPDATE decks SET title = :title, description = :description, remote_version = :version WHERE id = :id")
+    suspend fun updateCatalogInfo(id: Long, title: String, description: String?, version: Int)
+
+    /** Скачанные наборы каталога и их версии. */
+    @Query("SELECT remote_id, remote_version FROM decks WHERE remote_id IS NOT NULL")
+    fun observeDownloadedVersions(): Flow<List<DownloadedVersion>>
 }

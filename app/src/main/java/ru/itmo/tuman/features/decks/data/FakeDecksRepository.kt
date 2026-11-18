@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import ru.itmo.tuman.features.decks.domain.DecksRepository
 import ru.itmo.tuman.features.decks.domain.model.Card
+import ru.itmo.tuman.features.decks.domain.model.CatalogSet
 import ru.itmo.tuman.features.decks.domain.model.Deck
 
 /**
@@ -19,6 +20,7 @@ class FakeDecksRepository : DecksRepository {
     private val cards = MutableStateFlow<List<Card>>(emptyList())
     private var lastDeckId = 0L
     private var lastCardId = 0L
+    private val downloaded = MutableStateFlow<Map<String, Pair<Long, Int>>>(emptyMap()) // remoteId → (id набора, версия)
 
     override fun observeDecks(): Flow<List<Deck>> =
         combine(decks, cards) { decks, cards ->
@@ -59,4 +61,24 @@ class FakeDecksRepository : DecksRepository {
     override suspend fun deleteCard(id: Long) {
         cards.update { list -> list.filterNot { it.id == id } }
     }
+
+    // Упрощённо: обновление версии заменяет карточки целиком — прогресс в фейке не хранится
+    override suspend fun importCatalogSet(set: CatalogSet): Long {
+        val known = downloaded.value[set.remoteId]
+        if (known != null && known.second >= set.version) return known.first
+        val deckId = known?.first ?: ++lastDeckId
+        if (known == null) {
+            decks.update { listOf(Deck(id = deckId, title = set.title, cardCount = 0, isFromCatalog = true)) + it }
+        }
+        cards.update { list ->
+            list.filterNot { it.deckId == deckId } + set.cards.map {
+                Card(id = ++lastCardId, deckId = deckId, front = it.front, back = it.back, example = it.example)
+            }
+        }
+        downloaded.update { it + (set.remoteId to (deckId to set.version)) }
+        return deckId
+    }
+
+    override fun observeDownloadedVersions(): Flow<Map<String, Int>> =
+        downloaded.map { map -> map.mapValues { it.value.second } }
 }
