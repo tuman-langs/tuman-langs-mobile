@@ -20,6 +20,7 @@ import ru.itmo.tuman.features.decks.ui.edit.CardEditScreen
 import ru.itmo.tuman.features.decks.ui.list.DecksScreen
 import ru.itmo.tuman.features.home.ui.HomeScreen
 import ru.itmo.tuman.features.progress.ui.ProgressScreen
+import ru.itmo.tuman.features.progress.ui.AchievementsScreen
 import ru.itmo.tuman.features.review.ui.ReviewScreen
 import ru.itmo.tuman.features.settings.ui.SettingsScreen
 
@@ -106,7 +107,19 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
                     },
                 )
             }
-            composable<ProgressRoute> { ProgressScreen() }
+            composable<ProgressRoute> {
+                ProgressScreen(
+                    onAchievementsClick = {
+                        if (navController.canNavigate()) navController.navigate(AchievementsRoute)
+                    },
+                    onStartReviewClick = {
+                        if (navController.canNavigate()) navController.navigate(ReviewRoute())
+                    },
+                )
+            }
+            composable<AchievementsRoute> {
+                AchievementsScreen(onBack = goBack)
+            }
             composable<SettingsRoute> { SettingsScreen(onBack = goBack) }
         }
     }

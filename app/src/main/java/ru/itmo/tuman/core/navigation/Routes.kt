@@ -32,4 +32,7 @@ data class ReviewRoute(val deckId: Long? = null)
 object ProgressRoute
 
 @Serializable
+object AchievementsRoute
+
+@Serializable
 object SettingsRoute
