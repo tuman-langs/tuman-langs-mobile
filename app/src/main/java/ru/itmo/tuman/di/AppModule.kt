@@ -12,13 +12,14 @@ import ru.itmo.tuman.features.progress.di.progressModule
 import ru.itmo.tuman.features.progress.domain.ProgressRepository
 import ru.itmo.tuman.features.review.di.reviewModule
 import ru.itmo.tuman.features.review.domain.ReviewRepository
+import ru.itmo.tuman.features.settings.di.settingsUiModule
 
 /**
  * Главный модуль Koin. Сюда подключаются модули из core и features,
  * например: includes(databaseModule, decksModule, reviewModule).
  */
 val appModule = module {
-    includes(databaseModule, settingsModule, remindersModule, decksModule, reviewModule, progressModule)
+    includes(databaseModule, settingsModule, remindersModule, decksModule, reviewModule, progressModule, settingsUiModule)
 
     // Напоминанию (core/reminders) нужны числа из повторения и прогресса (features).
     // core не может импортировать features, поэтому связываем их здесь.

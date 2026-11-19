@@ -120,6 +120,17 @@
     <string name="rating_easy">легко</string>
     <string name="progress_title">Прогресс</string>
     <string name="settings_title">Настройки</string>
+    <string name="settings_reminder_enabled">Ежедневное напоминание</string>
+    <string name="settings_reminder_description">О карточках на сегодня</string>
+    <string name="settings_reminder_disabled">Выключено</string>
+    <string name="settings_reminder_time">Время</string>
+    <string name="settings_reminder_every_day">Каждый день</string>
+    <string name="settings_time_dialog_title">Время напоминания</string>
+    <string name="settings_notification_preview">Так будет выглядеть уведомление</string>
+    <string name="settings_notification_preview_text">18 карточек ждут повторения. Не прерывай серию — 6 дней! 🔥</string>
+    <string name="settings_disabled_warning">Без напоминаний легче пропустить день и потерять серию.</string>
+    <string name="settings_notifications_denied">Уведомления запрещены в настройках телефона. Без разрешения напоминание не придёт.</string>
+    <string name="settings_open_phone_settings">Открыть настройки телефона</string>
 
     <!-- Ежедневное напоминание (#32) -->
     <string name="reminder_channel_name">Ежедневные напоминания</string>
