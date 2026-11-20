@@ -6,7 +6,10 @@ import ru.itmo.tuman.core.reminders.ReminderInfo
 import ru.itmo.tuman.core.reminders.ReminderInfoSource
 import ru.itmo.tuman.core.reminders.di.remindersModule
 import ru.itmo.tuman.core.database.di.databaseModule
+import ru.itmo.tuman.core.network.di.networkModule
 import ru.itmo.tuman.core.settings.di.settingsModule
+import ru.itmo.tuman.features.catalog.di.catalogModule
+import ru.itmo.tuman.features.catalog.domain.CatalogSetStorage
 import ru.itmo.tuman.features.decks.di.decksModule
 import ru.itmo.tuman.features.progress.di.progressModule
 import ru.itmo.tuman.features.progress.domain.ProgressRepository
@@ -18,7 +21,17 @@ import ru.itmo.tuman.features.review.domain.ReviewRepository
  * например: includes(databaseModule, decksModule, reviewModule).
  */
 val appModule = module {
-    includes(databaseModule, settingsModule, remindersModule, decksModule, reviewModule, progressModule)
+    includes(
+        databaseModule,
+        networkModule,
+        settingsModule,
+        remindersModule,
+        decksModule,
+        catalogModule,
+        reviewModule,
+        progressModule,
+    )
+    single<CatalogSetStorage> { DecksCatalogSetStorage(get()) }
 
     // Напоминанию (core/reminders) нужны числа из повторения и прогресса (features).
     // core не может импортировать features, поэтому связываем их здесь.
