@@ -15,6 +15,7 @@ import ru.itmo.tuman.features.progress.di.progressModule
 import ru.itmo.tuman.features.progress.domain.ProgressRepository
 import ru.itmo.tuman.features.review.di.reviewModule
 import ru.itmo.tuman.features.review.domain.ReviewRepository
+import ru.itmo.tuman.features.settings.di.settingsUiModule
 
 /**
  * Главный модуль Koin. Сюда подключаются модули из core и features,
@@ -30,6 +31,7 @@ val appModule = module {
         catalogModule,
         reviewModule,
         progressModule,
+        settingsUiModule,
     )
     single<CatalogSetStorage> { DecksCatalogSetStorage(get()) }
 
