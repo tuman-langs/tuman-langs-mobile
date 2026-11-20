@@ -4,6 +4,8 @@
 
     <!-- Ежедневное напоминание (#32): на Android 13+ разрешение спрашивает экран настроек (#35) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".TumanApp"
