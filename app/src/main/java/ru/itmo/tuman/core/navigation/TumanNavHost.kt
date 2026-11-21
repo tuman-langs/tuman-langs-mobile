@@ -6,6 +6,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.activity.compose.ReportDrawnWhen
+import androidx.navigation.NavDestination.Companion.hasRoute
+import androidx.compose.runtime.collectAsState
+import org.koin.androidx.compose.koinViewModel
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.Lifecycle
 import androidx.navigation.NavHostController
@@ -19,6 +23,8 @@ import ru.itmo.tuman.features.decks.ui.deck.DeckScreen
 import ru.itmo.tuman.features.decks.ui.edit.CardEditScreen
 import ru.itmo.tuman.features.decks.ui.list.DecksScreen
 import ru.itmo.tuman.features.home.ui.HomeScreen
+import ru.itmo.tuman.features.home.ui.HomeUiState
+import ru.itmo.tuman.features.home.ui.HomeViewModel
 import ru.itmo.tuman.features.progress.ui.ProgressScreen
 import ru.itmo.tuman.features.progress.ui.AchievementsScreen
 import ru.itmo.tuman.features.review.ui.ReviewScreen
@@ -35,9 +41,15 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = backStackEntry?.destination
 
+    val homeViewModel: HomeViewModel = koinViewModel()
+    val homeState by homeViewModel.uiState.collectAsState()
+    ReportDrawnWhen { homeState != HomeUiState.Loading || currentDestination?.hasRoute<HomeRoute>() == false }
+
     Scaffold(
         bottomBar = {
-            if (currentDestination.isTab()) {
+            if (currentDestination.isTab() &&
+                (currentDestination?.hasRoute<HomeRoute>() != true || homeState is HomeUiState.Dashboard)
+            ) {
                 TumanBottomBar(currentDestination) { route -> navController.openTab(route) }
             }
         },
@@ -54,12 +66,25 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
         ) {
             composable<HomeRoute> {
                 HomeScreen(
+                    state = homeState,
+                    onSelectGoal = homeViewModel::selectGoal,
+                    onCompleteOnboarding = homeViewModel::completeOnboarding,
+                    onCatalogClick = { if (navController.canNavigate()) navController.openTab(CatalogRoute) },
+                    onCreateDeckClick = {
+                        if (navController.canNavigate()) navController.openTab(DecksRoute(createOnOpen = true))
+                    },
+                    onDecksClick = { if (navController.canNavigate()) navController.openTab(DecksRoute()) },
+                    onDeckClick = { deckId ->
+                        if (navController.canNavigate()) navController.navigate(DeckRoute(deckId))
+                    },
+                    onProgressClick = { if (navController.canNavigate()) navController.openTab(ProgressRoute) },
                     onStartReviewClick = { if (navController.canNavigate()) navController.navigate(ReviewRoute()) },
                     onSettingsClick = { if (navController.canNavigate()) navController.navigate(SettingsRoute) },
                 )
             }
-            composable<DecksRoute> {
+            composable<DecksRoute> { entry ->
                 DecksScreen(
+                    createOnOpen = entry.toRoute<DecksRoute>().createOnOpen,
                     onDeckClick = { deckId ->
                         if (navController.canNavigate()) navController.navigate(DeckRoute(deckId))
                     },
@@ -91,7 +116,7 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
             composable<CatalogRoute> {
                 CatalogScreen(
                     onMyDecksClick = {
-                        if (navController.canNavigate()) navController.openTab(DecksRoute)
+                        if (navController.canNavigate()) navController.openTab(DecksRoute())
                     },
                 )
             }

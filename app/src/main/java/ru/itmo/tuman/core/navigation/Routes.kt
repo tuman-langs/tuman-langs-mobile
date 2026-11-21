@@ -9,7 +9,7 @@ import kotlinx.serialization.Serializable
 object HomeRoute
 
 @Serializable
-object DecksRoute
+data class DecksRoute(val createOnOpen: Boolean = false)
 
 @Serializable
 data class DeckRoute(val deckId: Long)

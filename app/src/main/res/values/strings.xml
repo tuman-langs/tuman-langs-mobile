@@ -206,4 +206,39 @@
         <item quantity="many">Не прерывай серию — %d дней! 🔥</item>
         <item quantity="other">Не прерывай серию — %d дня! 🔥</item>
     </plurals>
+    <string name="home_wordmark">ТУМАН</string>
+    <string name="home_streak_badge">🔥 %1$d</string>
+    <string name="home_xp">%1$d XP</string>
+    <string name="home_greeting">Сәләм! Я совёнок Туман. Помогу учить башкирский по 10 минут в день.</string>
+    <string name="home_choose_goal">Сколько карточек в день?</string>
+    <string name="home_change_goal">Цель можно изменить потом в «Прогрессе».</string>
+    <string name="home_goal_save_error">Не удалось сохранить цель. Попробуйте ещё раз.</string>
+    <string name="home_get_started">Начать</string>
+    <string name="home_offline">Без регистрации · работает без интернета</string>
+    <string name="home_today">На сегодня</string>
+    <string name="home_today_breakdown">%1$d на повторение · %2$d новых · ~%3$d мин</string>
+    <string name="home_my_decks">Мои наборы</string>
+    <string name="home_all_decks">Все</string>
+    <string name="home_daily_goal">Дневная цель</string>
+    <string name="home_goal_fraction">%1$d/%2$d</string>
+    <string name="home_goal_reached">Цель выполнена</string>
+    <plurals name="home_goal_remaining">
+        <item quantity="one">Ещё %1$d карточка до цели</item>
+        <item quantity="few">Ещё %1$d карточки до цели</item>
+        <item quantity="many">Ещё %1$d карточек до цели</item>
+        <item quantity="other">Ещё %1$d карточек до цели</item>
+    </plurals>
+    <string name="home_done">На сегодня всё! 🎉</string>
+    <string name="home_no_cards">Пока нет карточек</string>
+    <plurals name="home_goal_done_streak">
+        <item quantity="one">Цель выполнена, серия — %1$d день.</item>
+        <item quantity="few">Цель выполнена, серия — %1$d дня.</item>
+        <item quantity="many">Цель выполнена, серия — %1$d дней.</item>
+        <item quantity="other">Цель выполнена, серия — %1$d дней.</item>
+    </plurals>
+    <string name="home_new_words">Учить новые слова</string>
+    <string name="home_no_decks">Пока нет наборов</string>
+    <string name="home_no_decks_hint">Скачайте готовый набор по башкирскому или создайте свой.</string>
+    <string name="home_open_catalog">Открыть каталог</string>
+    <string name="home_create_deck">Создать свой набор</string>
 </resources>
