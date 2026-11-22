@@ -26,7 +26,9 @@ import java.io.File
 import java.time.LocalTime
 
 /** Приёмочные проверки настоящих экранов и Room. Запускать на отдельном QA-эмуляторе:
- * перед каждым тестом очищается база установленной тестовой сборки. */
+ * перед каждым тестом очищается база установленной тестовой сборки.
+ * Поэтому класс включается только явно: `-e qaAcceptance true` (без него все тесты пропускаются),
+ * чтобы обычный connectedDebugAndroidTest не стёр наборы и прогресс на рабочем или демонстрационном устройстве. */
 @RunWith(AndroidJUnit4::class)
 class AcceptanceSmokeTest {
     @get:Rule val ui = createEmptyComposeRule()
@@ -38,8 +40,13 @@ class AcceptanceSmokeTest {
     private val evidence get() = File(context.filesDir, "qa-evidence").apply { mkdirs() }
 
     @Before fun reset() = runBlocking {
+        org.junit.Assume.assumeTrue(
+            "Очищает базу приложения; включается аргументом qaAcceptance=true",
+            InstrumentationRegistry.getArguments().getString("qaAcceptance") == "true",
+        )
         koin.get<TumanDatabase>().clearAllTables()
         settings.setDailyGoal(10)
+        settings.setOnboardingDone() // иначе после #33 откроется выбор цели, а не главный экран
         settings.setReminder(false, LocalTime.of(19, 0))
     }
     @After fun close() { activity?.close() }
