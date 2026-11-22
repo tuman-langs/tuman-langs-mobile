@@ -1,0 +1,20 @@
+{
+  "date": "2026-11-22",
+  "device": "API 26",
+  "method": "Download both available sets online; Android Settings Airplane mode switch ON; verify dumpsys connectivity Active default network none; restart app; review all 9 letter cards with all 4 ratings, including AGAIN repeat; open progress and catalog",
+  "scenarioAssertions": "all passed before cleanup",
+  "observedProgress": {
+    "xp": 144,
+    "answers": 19,
+    "goal": 20
+  },
+  "catalogMessage": "Нет интернета",
+  "cleanup": "airplane mode switched off successfully; subsequent svc wifi enable exited 137; independently confirmed airplane_mode_on=0, mobile_data=1, active validated Wi-Fi after cleanup",
+  "screenshots": [
+    "offline-01-downloaded-online.png",
+    "offline-02-downloaded-deck.png",
+    "offline-03-summary.png",
+    "offline-04-progress.png",
+    "offline-05-catalog-message.png"
+  ]
+}

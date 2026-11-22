@@ -1,0 +1,20 @@
+{
+  "method": "Force-stop process, send launch Intent, wait for rendered UI hierarchy containing home action. Includes ADB transport and UIAutomator dump overhead; does not measure icon tap.",
+  "results": [
+    {
+      "run": 1,
+      "hostElapsedMs": 1415,
+      "activityManager": "Starting: Intent { cmp=ru.itmo.tuman/.MainActivity }\nStatus: ok\nActivity: ru.itmo.tuman/.MainActivity\nThisTime: 217\nTotalTime: 217\nWaitTime: 225\nComplete\n"
+    },
+    {
+      "run": 2,
+      "hostElapsedMs": 1454,
+      "activityManager": "Starting: Intent { cmp=ru.itmo.tuman/.MainActivity }\nStatus: ok\nActivity: ru.itmo.tuman/.MainActivity\nThisTime: 221\nTotalTime: 221\nWaitTime: 258\nComplete\n"
+    },
+    {
+      "run": 3,
+      "hostElapsedMs": 1400,
+      "activityManager": "Starting: Intent { cmp=ru.itmo.tuman/.MainActivity }\nStatus: ok\nActivity: ru.itmo.tuman/.MainActivity\nThisTime: 199\nTotalTime: 199\nWaitTime: 205\nComplete\n"
+    }
+  ]
+}

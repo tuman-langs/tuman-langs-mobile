@@ -1,0 +1,14 @@
+airplane True ; NetworkFactories for: PhoneSwitcherNetworkRequstListener WIFI_UT WIFI TelephonyNetworkFactory[0]
+
+Active default network: none
+
+Current Networks:
+
+Network Requests:
+airplane False ; NetworkFactories for: PhoneSwitcherNetworkRequstListener WIFI_UT WIFI TelephonyNetworkFactory[0]
+
+Active default network: 105
+
+Current Networks:
+  NetworkAgentInfo{ ni{[type: MOBILE[LTE], state: CONNECTED/CONNECTED, reason: connected, extra: epc.tmobile.com, failover: false, available: true, roaming: false, metered: true]}  network{105}  nethandle{450988002014}  lp{{InterfaceName: radio0 LinkAddresses: [192.168.200.2/24,]  Routes: [0.0.0.0/0 -> 192.168.200.1 radio0,] DnsAddresses: [10.0.2.3,] Domains: null MTU: 1500 TcpBufferSizes: 524288,1048576,2097152,262144,524288,1048576}}  nc{[ Transports: CELLULAR Capabilities: MMS&SUPL&FOTA&IMS&CBS&IA&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&VALIDATED&FOREGROUND LinkUpBandwidth>=51200Kbps LinkDnBandwidth>=102400Kbps Specifier: <1>]}  Score{50}  everValidated{true}  lastValidated{true}  created{true} lingering{false} explicitlySelected{false} acceptUnvalidated{false} everCaptivePortalDetected{false} lastCaptivePortalDetected{false} }
+    Requests: REQUEST:2 LISTEN:3 BACKGROUND_REQUEST:1 total:6

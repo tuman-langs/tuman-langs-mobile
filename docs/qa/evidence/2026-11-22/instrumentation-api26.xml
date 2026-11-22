@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite name="ru.itmo.tuman.AcceptanceSmokeTest" tests="45" failures="0" errors="0" skipped="2" time="16.591" timestamp="2026-11-22T00:09:21" hostname="localhost">
+  <properties>
+    <property name="device" value="Medium_Phone(AVD) - 8.0.0" />
+    <property name="flavor" value="" />
+    <property name="project" value=":app" />
+  </properties>
+  <testcase name="reviewRatingsPersistAndProgressMatchesHistory" classname="ru.itmo.tuman.AcceptanceSmokeTest" time="5.154" />
+  <testcase name="emptyProgressAndReminderToggle" classname="ru.itmo.tuman.AcceptanceSmokeTest" time="1.189" />
+  <testcase name="activityLaunchReadyWithinFourSeconds" classname="ru.itmo.tuman.AcceptanceSmokeTest" time="0.546" />
+  <testcase name="publishedCatalogDownloadAndOfflineReview" classname="ru.itmo.tuman.AcceptanceSmokeTest" time="0.032">
+    <skipped />
+  </testcase>
+  <testcase name="realReminderArrivesThenIsCancelled" classname="ru.itmo.tuman.AcceptanceSmokeTest" time="0.0">
+    <skipped />
+  </testcase>
+  <testcase name="deckAndCardCrudWithUnicodeAndValidation" classname="ru.itmo.tuman.AcceptanceSmokeTest" time="5.815" />
+  <testcase name="useAppContext" classname="ru.itmo.tuman.ExampleInstrumentedTest" time="0.001" />
+  <testcase name="deletingDeckDeletesItsCardsAndReviews" classname="ru.itmo.tuman.core.database.TumanDatabaseTest" time="0.001" />
+  <testcase name="catalogDeckKeepsRemoteFields" classname="ru.itmo.tuman.core.database.TumanDatabaseTest" time="0.001" />
+  <testcase name="newCardHasInitialAlgorithmFields" classname="ru.itmo.tuman.core.database.TumanDatabaseTest" time="0.001" />
+  <testcase name="reviewIsSavedForCard" classname="ru.itmo.tuman.core.database.TumanDatabaseTest" time="0.001" />
+  <testcase name="ownDecksWithoutRemoteIdDoNotConflict" classname="ru.itmo.tuman.core.database.TumanDatabaseTest" time="0.001" />
+  <testcase name="sameCatalogDeckCannotBeSavedTwice" classname="ru.itmo.tuman.core.database.TumanDatabaseTest" time="0.028" />
+  <testcase name="cardWithBashkirLettersIsSavedAndReadBack" classname="ru.itmo.tuman.core.database.TumanDatabaseTest" time="0.001" />
+  <testcase name="syncSchedulesWhenEnabledAndKeepsExisting" classname="ru.itmo.tuman.core.reminders.ReminderSchedulerTest" time="0.001" />
+  <testcase name="changingTimeReplacesWork" classname="ru.itmo.tuman.core.reminders.ReminderSchedulerTest" time="0.001" />
+  <testcase name="enableSavesSettingsAndSchedulesDailyWork" classname="ru.itmo.tuman.core.reminders.ReminderSchedulerTest" time="0.031" />
+  <testcase name="disableCancelsWorkAndKeepsTime" classname="ru.itmo.tuman.core.reminders.ReminderSchedulerTest" time="0.0" />
+  <testcase name="syncDoesNothingWhenDisabled" classname="ru.itmo.tuman.core.reminders.ReminderSchedulerTest" time="0.0" />
+  <testcase name="noCardsMeansNoNotification" classname="ru.itmo.tuman.core.reminders.ReminderWorkerTest" time="3.098" />
+  <testcase name="cardsWaitingShowsNotificationWithCountAndStreak" classname="ru.itmo.tuman.core.reminders.ReminderWorkerTest" time="0.031" />
+  <testcase name="disabledReminderShowsNothing" classname="ru.itmo.tuman.core.reminders.ReminderWorkerTest" time="0.001" />
+  <testcase name="noStreakYetShowsStartText" classname="ru.itmo.tuman.core.reminders.ReminderWorkerTest" time="0.001" />
+  <testcase name="defaultsWhenNothingSaved" classname="ru.itmo.tuman.core.settings.DataStoreSettingsRepositoryTest" time="0.001" />
+  <testcase name="valuesSurviveRestart" classname="ru.itmo.tuman.core.settings.DataStoreSettingsRepositoryTest" time="0.031" />
+  <testcase name="settingsProgressAndReviewAreCreated" classname="ru.itmo.tuman.di.KoinGraphTest" time="0.0" />
+  <testcase name="newSetCreatesDeckAndAllCards" classname="ru.itmo.tuman.features.decks.data.CatalogImportTest" time="0.001" />
+  <testcase name="sameVersionChangesNothing" classname="ru.itmo.tuman.features.decks.data.CatalogImportTest" time="0.001" />
+  <testcase name="newVersionUpdatesTextAndKeepsProgress" classname="ru.itmo.tuman.features.decks.data.CatalogImportTest" time="0.028" />
+  <testcase name="newVersionAddsNewCardsAndRemovesMissing" classname="ru.itmo.tuman.features.decks.data.CatalogImportTest" time="0.001" />
+  <testcase name="editingCardTextKeepsAlgorithmFields" classname="ru.itmo.tuman.features.decks.data.DecksRepositoryImplTest" time="0.0" />
+  <testcase name="deletingDeckDeletesItsCards" classname="ru.itmo.tuman.features.decks.data.DecksRepositoryImplTest" time="0.0" />
+  <testcase name="deleteCardRemovesOnlyThatCard" classname="ru.itmo.tuman.features.decks.data.DecksRepositoryImplTest" time="0.031" />
+  <testcase name="decksComeWithCardCountIncludingEmptyDeck" classname="ru.itmo.tuman.features.decks.data.DecksRepositoryImplTest" time="0.001" />
+  <testcase name="saveCardIgnoresReadOnlyFields" classname="ru.itmo.tuman.features.decks.data.DecksRepositoryImplTest" time="0.001" />
+  <testcase name="cardShowsReviewStatusFields" classname="ru.itmo.tuman.features.decks.data.DecksRepositoryImplTest" time="0.001" />
+  <testcase name="renameDeckChangesTitle" classname="ru.itmo.tuman.features.decks.data.DecksRepositoryImplTest" time="0.001" />
+  <testcase name="progressIsCalculatedFromDatabaseAndUpdatesItself" classname="ru.itmo.tuman.features.progress.data.ProgressRepositoryImplTest" time="0.031" />
+  <testcase name="dueCardsGoFirstOverdueFirstThenNewUpToDailyGoal" classname="ru.itmo.tuman.features.review.data.ReviewRepositoryImplTest" time="0.001" />
+  <testcase name="answerForMissingCardWritesNothing" classname="ru.itmo.tuman.features.review.data.ReviewRepositoryImplTest" time="0.0" />
+  <testcase name="emptyDeckGivesEmptyList" classname="ru.itmo.tuman.features.review.data.ReviewRepositoryImplTest" time="0.001" />
+  <testcase name="tomorrowCardIsNotInTodayList" classname="ru.itmo.tuman.features.review.data.ReviewRepositoryImplTest" time="0.001" />
+  <testcase name="previewGivesIntervalForEachRatingAndChangesNothing" classname="ru.itmo.tuman.features.review.data.ReviewRepositoryImplTest" time="0.001" />
+  <testcase name="goodMovesDueToFutureAndAddsOneHistoryRow" classname="ru.itmo.tuman.features.review.data.ReviewRepositoryImplTest" time="0.0" />
+  <testcase name="againReturnsCardSoon" classname="ru.itmo.tuman.features.review.data.ReviewRepositoryImplTest" time="0.03" />
+</testsuite>
