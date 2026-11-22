@@ -24,6 +24,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -47,9 +48,10 @@ import ru.itmo.tuman.features.decks.domain.model.Deck
 fun DecksScreen(
     onDeckClick: (deckId: Long) -> Unit,
     viewModel: DecksViewModel = koinViewModel(),
+    createOnOpen: Boolean = false,
 ) {
     val state by viewModel.uiState.collectAsState()
-    DecksContent(state) { action ->
+    DecksContent(state, createOnOpen = createOnOpen) { action ->
         when (action) {
             is DecksAction.Open -> onDeckClick(action.id)
             is DecksAction.Create -> viewModel.onCreate(action.name)
@@ -62,7 +64,6 @@ fun DecksScreen(
 
 /** Какой диалог открыт. Это деталь отображения, поэтому она живёт здесь, а не во ViewModel. */
 private sealed interface DecksDialog {
-    data object Create : DecksDialog
     data class Menu(val deck: Deck) : DecksDialog
     data class Rename(val deck: Deck) : DecksDialog
     data class Delete(val deck: Deck) : DecksDialog
@@ -70,7 +71,12 @@ private sealed interface DecksDialog {
 
 /** Разметка экрана без ViewModel — её показывает @Preview. */
 @Composable
-fun DecksContent(state: DecksUiState, onAction: (DecksAction) -> Unit) {
+fun DecksContent(
+    state: DecksUiState,
+    createOnOpen: Boolean = false,
+    onAction: (DecksAction) -> Unit,
+) {
+    var showCreate by rememberSaveable { mutableStateOf(createOnOpen) }
     var dialog by remember { mutableStateOf<DecksDialog?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -90,7 +96,7 @@ fun DecksContent(state: DecksUiState, onAction: (DecksAction) -> Unit) {
                 ExtendedFloatingActionButton(
                     text = { Text(stringResource(R.string.decks_fab)) },
                     icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                    onClick = { dialog = DecksDialog.Create },
+                    onClick = { showCreate = true },
                 )
             }
         },
@@ -100,7 +106,7 @@ fun DecksContent(state: DecksUiState, onAction: (DecksAction) -> Unit) {
             .padding(innerPadding)
         when {
             state.isLoading -> DecksLoading(modifier)
-            state.decks.isEmpty() -> DecksEmpty(modifier, onCreate = { dialog = DecksDialog.Create })
+            state.decks.isEmpty() -> DecksEmpty(modifier, onCreate = { showCreate = true })
             else -> DecksList(
                 decks = state.decks,
                 modifier = modifier,
@@ -111,17 +117,19 @@ fun DecksContent(state: DecksUiState, onAction: (DecksAction) -> Unit) {
     }
 
     val close = { dialog = null }
-    when (val current = dialog) {
-        null -> Unit
-        DecksDialog.Create -> DeckNameDialog(
+    if (showCreate) {
+        DeckNameDialog(
             title = stringResource(R.string.decks_create_title),
             initialName = "",
             onSave = {
                 onAction(DecksAction.Create(it))
-                close()
+                showCreate = false
             },
-            onDismiss = close,
+            onDismiss = { showCreate = false },
         )
+    }
+    when (val current = dialog) {
+        null -> Unit
         is DecksDialog.Menu -> DeckMenuSheet(
             deck = current.deck,
             onRename = { dialog = DecksDialog.Rename(current.deck) },

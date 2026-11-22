@@ -31,7 +31,7 @@ private class TumanTab(val route: Any, @StringRes val label: Int, val icon: Imag
 
 private val tabs = listOf(
     TumanTab(HomeRoute, R.string.tab_home, Icons.Filled.Home),
-    TumanTab(DecksRoute, R.string.tab_decks, Icons.AutoMirrored.Filled.List),
+    TumanTab(DecksRoute(), R.string.tab_decks, Icons.AutoMirrored.Filled.List),
     TumanTab(CatalogRoute, R.string.tab_catalog, Icons.Filled.Search),
     TumanTab(ProgressRoute, R.string.tab_progress, Icons.Filled.Star),
 )
