@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Notification
 import android.app.NotificationManager
 import android.content.Context
+import android.os.Build
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.work.ListenableWorker
@@ -39,8 +40,10 @@ class ReminderWorkerTest {
     @Before
     fun setUp() {
         context = InstrumentationRegistry.getInstrumentation().targetContext
-        InstrumentationRegistry.getInstrumentation().uiAutomation
-            .grantRuntimePermission(context.packageName, Manifest.permission.POST_NOTIFICATIONS)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            InstrumentationRegistry.getInstrumentation().uiAutomation
+                .grantRuntimePermission(context.packageName, Manifest.permission.POST_NOTIFICATIONS)
+        }
         notificationManager().cancelAll()
 
         val koin = GlobalContext.get()
@@ -56,13 +59,18 @@ class ReminderWorkerTest {
 
     @After
     fun tearDown() {
-        notificationManager().cancelAll()
-        loadKoinModules(
-            module {
-                single { realSettings }
-                single { realInfoSource }
-            },
-        )
+        if (this::context.isInitialized) notificationManager().cancelAll()
+        if (this::realSettings.isInitialized && this::realInfoSource.isInitialized) {
+            // Фабрики Koin не должны удерживать экземпляр завершённого теста.
+            val savedSettings = realSettings
+            val savedInfoSource = realInfoSource
+            loadKoinModules(
+                module {
+                    single<SettingsRepository> { savedSettings }
+                    single<ReminderInfoSource> { savedInfoSource }
+                },
+            )
+        }
     }
 
     private fun notificationManager() = context.getSystemService(NotificationManager::class.java)
