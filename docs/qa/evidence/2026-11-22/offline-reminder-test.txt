@@ -1,0 +1,8 @@
+
+ru.itmo.tuman.AcceptanceSmokeTest:.
+
+Time: 100.817
+
+OK (1 test)
+
+

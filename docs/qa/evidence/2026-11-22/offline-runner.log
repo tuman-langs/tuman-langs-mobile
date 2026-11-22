@@ -1,0 +1,19 @@
+Warning: Activity not started, its current task has been brought to the front
+Warning: Activity not started, its current task has been brought to the front
+Warning: Activity not started, its current task has been brought to the front
+Traceback (most recent call last):
+  File "/Users/user/Documents/Codex/2026-11-22/22-37-39-pr-2/work/offline_acceptance.py", line 51, in <module>
+    airplane(False);cmd('shell','svc','wifi','enable');cmd('shell','svc','data','enable');home()
+                    ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/user/Documents/Codex/2026-11-22/22-37-39-pr-2/work/offline_acceptance.py", line 4, in cmd
+    def cmd(*a):return s.check_output([adb,'-s','emulator-5554',*a])
+                       ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 472, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+           ~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+               **kwargs).stdout
+               ^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.14/lib/python3.14/subprocess.py", line 577, in run
+    raise CalledProcessError(retcode, process.args,
+                             output=stdout, stderr=stderr)
+subprocess.CalledProcessError: Command '['/Users/user/Library/Android/sdk/platform-tools/adb', '-s', 'emulator-5554', 'shell', 'svc', 'wifi', 'enable']' returned non-zero exit status 137.

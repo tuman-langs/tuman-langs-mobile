@@ -1,0 +1,17 @@
+{
+  "date": "2026-11-22",
+  "device": "Medium_Phone / API 26",
+  "method": "Seed 10 cards + answers through UI test, force-stop, snapshot Room + preferences, adb reboot, wait boot_completed, launch and compare snapshot",
+  "beforeCounts": {
+    "decks": 1,
+    "cards": 10,
+    "reviews": 10
+  },
+  "afterCounts": {
+    "decks": 1,
+    "cards": 10,
+    "reviews": 10
+  },
+  "allRowsIdentical": true,
+  "preferencesIdentical": true
+}
