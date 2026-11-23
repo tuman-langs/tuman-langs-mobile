@@ -22,14 +22,17 @@ interface ReviewRepository {
      */
     fun observeTodayCards(deckId: Long? = null): Flow<List<ReviewCard>>
 
+    /** Все карточки набора для тренировки вне расписания. */
+    suspend fun getPracticeCards(deckId: Long): List<ReviewCard>
+
     /** Сколько на повторение и сколько новых — для главного экрана. */
     fun observeTodayCount(): Flow<TodayCount>
 
     /** Через сколько покажем карточку при каждой из 4 оценок — подписи под кнопками. */
     suspend fun previewIntervals(cardId: Long, now: Instant): Map<Rating, Duration>
 
-    /** Пересчитывает карточку через `Scheduler.review` и сохраняет ответ — одной транзакцией. */
-    suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant)
+    /** Сохраняет ответ и новое состояние одной транзакцией. Возвращает назначенный интервал. */
+    suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant): Duration
 
     companion object {
         /** Дневная цель по умолчанию. Настоящая цель берётся из настроек (#30, `SettingsRepository`). */

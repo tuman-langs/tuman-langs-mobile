@@ -66,6 +66,7 @@ fun ReviewScreen(
         onBack = onBack,
         onHome = onHome,
         onProgress = onProgress,
+        onPracticeAgain = if (viewModel.canPractice) viewModel::onPracticeAgain else null,
     )
 }
 
@@ -79,6 +80,7 @@ fun ReviewContent(
     onBack: () -> Unit,
     onHome: () -> Unit,
     onProgress: () -> Unit,
+    onPracticeAgain: (() -> Unit)? = null,
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
@@ -93,7 +95,7 @@ fun ReviewContent(
     Scaffold(
         topBar = {
             TumanTopBar(
-                title = stringResource(R.string.review_title),
+                title = stringResource(if (state.isPractice) R.string.review_practice_title else R.string.review_title),
                 actions = {
                     androidx.compose.material3.IconButton(onClick = onBack) {
                         androidx.compose.material3.Icon(
@@ -116,7 +118,7 @@ fun ReviewContent(
         ) {
             when {
                 state.isLoading -> CircularProgressIndicator()
-                state.isFinished -> ReviewSummary(state, onHome, onProgress)
+                state.isFinished -> ReviewSummary(state, onHome, onProgress, onPracticeAgain)
                 state.isEmpty -> ReviewEmpty(onHome)
                 state.currentCard != null -> ReviewCardContent(
                     state = state,
@@ -224,8 +226,9 @@ private fun RatingButtons(
             row.forEach { (rating, labelAndTone) ->
                 RatingButton(
                     label = stringResource(labelAndTone.first),
-                    interval = state.intervals[rating]?.toDisplayText(rating)
-                        ?: stringResource(R.string.review_interval_loading),
+                    interval = if (state.isPractice) null else (
+                        state.intervals[rating]?.toDisplayText() ?: stringResource(R.string.review_interval_loading)
+                    ),
                     tone = labelAndTone.second,
                     onClick = { onRatingSelected(rating) },
                     modifier = Modifier.weight(1f),
@@ -237,8 +240,7 @@ private fun RatingButtons(
 }
 
 @Composable
-private fun Duration.toDisplayText(rating: Rating): String = when {
-    rating == Rating.AGAIN -> stringResource(R.string.review_interval_less_minute)
+private fun Duration.toDisplayText(): String = when {
     isZero || isNegative -> stringResource(R.string.review_interval_less_minute)
     toDays() > 0 -> stringResource(R.string.review_interval_days, toDays())
     toHours() > 0 -> stringResource(R.string.review_interval_hours, toHours())
@@ -266,6 +268,7 @@ private fun ReviewSummary(
     state: ReviewUiState,
     onHome: () -> Unit,
     onProgress: () -> Unit,
+    onPracticeAgain: (() -> Unit)?,
 ) {
     val accuracy = if (state.answersCount == 0) 0
     else state.correctAnswers * 100 / state.answersCount
@@ -279,13 +282,28 @@ private fun ReviewSummary(
         Text(stringResource(R.string.review_session_finished), style = MaterialTheme.typography.headlineSmall)
         Text(stringResource(R.string.review_answers_count, state.answersCount))
         Text(stringResource(R.string.review_correct_percent, accuracy))
-        Text(stringResource(R.string.review_xp, state.earnedXp), style = MaterialTheme.typography.titleLarge)
-        Text(stringResource(R.string.review_streak_pending))
-        TumanPrimaryButton(
-            text = stringResource(R.string.review_go_progress),
-            onClick = onProgress,
-            modifier = Modifier.fillMaxWidth(),
-        )
+        if (!state.isPractice) {
+            Text(stringResource(R.string.review_xp, state.earnedXp), style = MaterialTheme.typography.titleLarge)
+            Text(stringResource(R.string.review_streak_pending))
+        }
+        if (onPracticeAgain != null) {
+            TumanPrimaryButton(
+                text = stringResource(R.string.review_practice_again),
+                onClick = onPracticeAgain,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        if (!state.isPractice) {
+            if (onPracticeAgain == null) {
+                TumanPrimaryButton(
+                    text = stringResource(R.string.review_go_progress),
+                    onClick = onProgress,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                TextButton(onClick = onProgress) { Text(stringResource(R.string.review_go_progress)) }
+            }
+        }
         TextButton(onClick = onHome) {
             Text(stringResource(R.string.review_go_home))
         }

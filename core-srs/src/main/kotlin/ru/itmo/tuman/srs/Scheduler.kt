@@ -18,8 +18,11 @@ object Scheduler {
 
     private val w = FsrsParameters.W
 
-    /** Минимальный интервал — один день, поэтому повторов в тот же день не бывает. */
     private const val MIN_INTERVAL_DAYS = 1L
+    private val newEasyInterval = Duration.ofDays(1)
+    private val firstStep = Duration.ofMinutes(1)
+    private val hardFirstStep = Duration.ofMinutes(6)
+    private val finalStep = Duration.ofMinutes(10)
 
     private const val MINUTES_PER_DAY = 24.0 * 60.0
 
@@ -49,9 +52,26 @@ object Scheduler {
         return CardState(
             stability = stability,
             difficulty = difficulty,
-            due = now.plus(Duration.ofDays(intervalDays(stability))),
+            due = now.plus(initialOrLearningInterval(state, rating) ?: Duration.ofDays(intervalDays(stability))),
             lastReview = now,
         )
+    }
+
+    private fun initialOrLearningInterval(state: CardState, rating: Rating): Duration? {
+        // Интервал предыдущего ответа позволяет восстановить шаг после закрытия приложения.
+        // До появления коротких шагов все сохранённые интервалы были от одного дня.
+        val previous = state.lastReview?.let { Duration.between(it, state.due) }
+        val isFirstStep = state.isNew || previous == firstStep || previous == hardFirstStep
+        return when (rating) {
+            Rating.AGAIN -> if (isFirstStep) firstStep else finalStep
+            Rating.HARD -> when {
+                isFirstStep -> hardFirstStep
+                previous == finalStep -> finalStep
+                else -> null
+            }
+            Rating.GOOD -> if (isFirstStep) finalStep else null
+            Rating.EASY -> if (state.isNew) newEasyInterval else null
+        }
     }
 
     /** R(t, S) = (1 + FACTOR · t / S)^(−w20): вероятность вспомнить через t дней. */

@@ -7,9 +7,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.itmo.tuman.R
@@ -30,35 +28,38 @@ class ReviewViewModel(
 
     private val sessionCards = mutableListOf<ReviewCard>()
 
-    // Карточки, ответ на которые уже сохранён в этой сессии. Если такая карточка
-    // снова в очереди (после «не помню»), это повтор в конце сессии: ответ не пишем
-    // в базу и не считаем в итоге, чтобы алгоритм и история видели один ответ за день.
+    // Все ответы меняют расписание, но в итог сессии и XP карточка входит один раз.
     private val answeredIds = mutableSetOf<Long>()
-    private var sessionStarted = false
     private var hintShown = false
+    val canPractice: Boolean get() = deckId != null
 
     init {
-        repository.observeTodayCards(deckId)
-            .onEach { cards ->
-                if (!sessionStarted) {
-                    sessionStarted = true
-                    sessionCards.addAll(cards)
-                    if (cards.isEmpty()) {
-                        _uiState.update { it.copy(isLoading = false, isEmpty = true) }
-                    } else {
-                        showCard(0)
-                    }
-                }
+        loadSession(practiceOnly = false)
+    }
+
+    fun onPracticeAgain() {
+        if (!canPractice || !_uiState.value.isFinished) return
+        loadSession(practiceOnly = true)
+    }
+
+    private fun loadSession(practiceOnly: Boolean) {
+        _uiState.value = ReviewUiState()
+        viewModelScope.launch {
+            try {
+                val due = if (practiceOnly) emptyList() else repository.observeTodayCards(deckId).first()
+                val isPractice = deckId != null && due.isEmpty()
+                val cards = if (isPractice) repository.getPracticeCards(checkNotNull(deckId)) else due
+                sessionCards.clear()
+                sessionCards.addAll(cards)
+                answeredIds.clear()
+                _uiState.value = ReviewUiState(isLoading = false, isEmpty = cards.isEmpty(), isPractice = isPractice)
+                if (cards.isNotEmpty()) showCard(0)
+            } catch (error: CancellationException) {
+                throw error
+            } catch (error: Exception) {
+                _uiState.update { it.copy(isLoading = false, errorRes = R.string.review_error_load) }
             }
-            .catch { error ->
-                _uiState.update {
-                    it.copy(
-                        isLoading = false,
-                        errorRes = R.string.review_error_load,
-                    )
-                }
-            }
-            .launchIn(viewModelScope)
+        }
     }
 
     fun onRevealAnswer() {
@@ -66,7 +67,7 @@ class ReviewViewModel(
         _uiState.update {
             it.copy(
                 isAnswerVisible = true,
-                isHintVisible = !hintShown,
+                isHintVisible = !it.isPractice && !hintShown,
             )
         }
         hintShown = true
@@ -84,18 +85,19 @@ class ReviewViewModel(
         _uiState.update { it.copy(isSubmitting = true) }
         viewModelScope.launch {
             try {
-                val isRepeat = card.id in answeredIds
-                if (!isRepeat) {
-                    repository.submitAnswer(card.id, rating, now())
-                    answeredIds += card.id
+                val answeredAt = now()
+                val interval = if (state.isPractice) null else repository.submitAnswer(card.id, rating, answeredAt)
+                val isRepeat = !answeredIds.add(card.id)
+                // Короткий шаг можно пройти раньше срока, когда других карточек уже нет.
+                if (interval != null && interval <= LEARN_AHEAD_LIMIT) {
+                    sessionCards.add(card.copy(learningDue = answeredAt.plus(interval)))
                 }
-                if (rating == Rating.AGAIN) sessionCards.add(card)
 
                 val nextPosition = state.position
                 val counted = if (isRepeat) 0 else 1
                 val nextAnswersCount = state.answersCount + counted
                 val nextCorrectAnswers = state.correctAnswers + if (isRepeat || rating == Rating.AGAIN) 0 else 1
-                val nextXp = state.earnedXp + XP_PER_ANSWER * counted
+                val nextXp = if (state.isPractice) 0 else state.earnedXp + XP_PER_ANSWER * counted
                 if (nextPosition >= sessionCards.size) {
                     _uiState.update {
                         it.copy(
@@ -138,7 +140,18 @@ class ReviewViewModel(
     }
 
     private fun showCard(index: Int) {
-        val card = sessionCards[index]
+        val remaining = sessionCards.subList(index, sessionCards.size)
+        val nextLearning = remaining.filter { it.learningDue != null }.minByOrNull { it.learningDue!! }
+        val currentTime = now()
+        val card = if (_uiState.value.isPractice) {
+            remaining.first()
+        } else if (nextLearning != null && nextLearning.learningDue?.isAfter(currentTime) == false) {
+            nextLearning
+        } else {
+            remaining.firstOrNull { it.learningDue == null } ?: checkNotNull(nextLearning)
+        }
+        val offset = remaining.indexOf(card)
+        if (offset > 0) sessionCards.add(index, sessionCards.removeAt(index + offset))
         _uiState.update {
             it.copy(
                 currentCard = card,
@@ -151,10 +164,11 @@ class ReviewViewModel(
                 intervals = emptyMap(),
             )
         }
+        if (_uiState.value.isPractice) return
         viewModelScope.launch {
             try {
                 val intervals = repository.previewIntervals(card.id, now())
-                if (_uiState.value.currentCard?.id == card.id) {
+                if (_uiState.value.position == index + 1 && !_uiState.value.isFinished && !_uiState.value.isPractice) {
                     _uiState.update { it.copy(intervals = intervals) }
                 }
             } catch (error: CancellationException) {
@@ -167,5 +181,6 @@ class ReviewViewModel(
 
     private companion object {
         const val XP_PER_ANSWER = 10
+        val LEARN_AHEAD_LIMIT: Duration = Duration.ofMinutes(20)
     }
 }

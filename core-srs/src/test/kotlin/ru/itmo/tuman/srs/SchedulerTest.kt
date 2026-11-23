@@ -21,11 +21,10 @@ class SchedulerTest {
     // --- Новая карточка: по тесту на каждую оценку ---
 
     @Test
-    fun newCardAgain_stabilityW0_shownTomorrow() {
+    fun newCardAgain_stabilityW0_repeatsInOneMinute() {
         val next = Scheduler.review(newCard, Rating.AGAIN, now)
         assertEquals(w[0], next.stability, 1e-9)
-        // S0 = 0,21 дня округляется до минимального интервала — 1 день.
-        assertEquals(1L, intervalDays(next))
+        assertEquals(now.plusSeconds(60), next.due)
         assertEquals(now, next.lastReview)
     }
 
@@ -33,23 +32,23 @@ class SchedulerTest {
     fun newCardHard_stabilityW1() {
         val next = Scheduler.review(newCard, Rating.HARD, now)
         assertEquals(w[1], next.stability, 1e-9)
-        assertEquals(1L, intervalDays(next))
+        assertEquals(now.plusSeconds(360), next.due)
     }
 
     @Test
     fun newCardGood_stabilityW2_difficultyFromFormula() {
         val next = Scheduler.review(newCard, Rating.GOOD, now)
         assertEquals(w[2], next.stability, 1e-9)
-        assertEquals(2L, intervalDays(next))
+        assertEquals(now.plusSeconds(600), next.due)
         // D0(3) = w4 − e^(2·w5) + 1 ≈ 2,12
         assertEquals(2.12, next.difficulty, 0.01)
     }
 
     @Test
-    fun newCardEasy_stabilityW3_difficultyClampedToOne() {
+    fun newCardEasy_shownTomorrowWithStabilityW3AndMinimumDifficulty() {
         val next = Scheduler.review(newCard, Rating.EASY, now)
         assertEquals(w[3], next.stability, 1e-9)
-        assertEquals(8L, intervalDays(next))
+        assertEquals(1L, intervalDays(next))
         // По формуле D0(4) ≈ −4,8, но сложность не бывает меньше 1.
         assertEquals(FsrsParameters.MIN_DIFFICULTY, next.difficulty, 1e-9)
     }
@@ -103,17 +102,16 @@ class SchedulerTest {
         assertEquals(1L, Scheduler.intervalDays(0.2))
     }
 
-    /** Пример из docs/fsrs.md: «хорошо» → «хорошо» через 2 дня → «не помню» через 11 дней. */
     @Test
-    fun exampleFromDocs() {
-        val day0 = Scheduler.review(newCard, Rating.GOOD, now)
-        assertEquals(2L, intervalDays(day0))
-
-        val day2 = Scheduler.review(day0, Rating.GOOD, day0.due)
-        assertEquals(11.0, day2.stability, 0.1)
-
-        val day13 = Scheduler.review(day2, Rating.AGAIN, day2.due)
-        assertEquals(1.5, day13.stability, 0.1)
-        assertEquals(7.4, day13.difficulty, 0.1)
+    fun learningAdvancesThenReturnsToDaysAndLapseStartsRelearning() {
+        val first = Scheduler.review(newCard, Rating.AGAIN, now)
+        val second = Scheduler.review(first, Rating.GOOD, first.due)
+        assertEquals(first.due.plusSeconds(600), second.due)
+        assertEquals(second.due.plusSeconds(600), Scheduler.review(second, Rating.HARD, second.due).due)
+        val graduated = Scheduler.review(second, Rating.GOOD, second.due)
+        assertTrue(intervalDays(graduated) >= 1)
+        val relearning = Scheduler.review(graduated, Rating.AGAIN, graduated.due)
+        assertEquals(graduated.due.plusSeconds(600), relearning.due)
+        assertTrue(intervalDays(Scheduler.review(relearning, Rating.GOOD, relearning.due)) >= 1)
     }
 }

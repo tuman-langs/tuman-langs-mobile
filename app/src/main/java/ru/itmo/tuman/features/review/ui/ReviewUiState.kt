@@ -13,6 +13,7 @@ data class ReviewUiState(
     val isHintVisible: Boolean = false,
     val isEmpty: Boolean = false,
     val isFinished: Boolean = false,
+    val isPractice: Boolean = false,
     val isSubmitting: Boolean = false,
     val intervals: Map<Rating, Duration> = emptyMap(),
     val answersCount: Int = 0,

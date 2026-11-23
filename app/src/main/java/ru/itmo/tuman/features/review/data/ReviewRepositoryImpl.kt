@@ -50,6 +50,9 @@ class ReviewRepositoryImpl(
         dailyGoal.flatMapLatest { goal -> reviewDao.observeTodayCards(startOfNextDayMillis(), deckId, goal) }
             .map { rows -> rows.map { it.toReviewCard() } }
 
+    override suspend fun getPracticeCards(deckId: Long): List<ReviewCard> =
+        cardDao.getByDeck(deckId).map { it.toReviewCard() }
+
     override fun observeTodayCount(): Flow<TodayCount> =
         combine(reviewDao.observeTodayCounts(startOfNextDayMillis()), dailyGoal) { counts, goal ->
             // Те же правила, что у списка: сначала карточки на повторение, новые — на остаток цели
@@ -65,10 +68,11 @@ class ReviewRepositoryImpl(
         }
     }
 
-    override suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant) {
+    override suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant): Duration {
         // Транзакция: или сохранится и новое состояние карточки, и строка истории, или ничего
-        db.withTransaction {
+        return db.withTransaction {
             val next = Scheduler.review(requireCard(cardId).toCardState(), rating, now)
+            val interval = Duration.between(now, next.due)
             cardDao.updateSchedule(
                 id = cardId,
                 stability = next.stability,
@@ -81,9 +85,10 @@ class ReviewRepositoryImpl(
                     cardId = cardId,
                     rating = rating.grade,
                     reviewedAt = now.toEpochMilli(),
-                    intervalDays = Duration.between(now, next.due).toMillis() / MILLIS_PER_DAY,
+                    intervalDays = interval.toMillis() / MILLIS_PER_DAY,
                 ),
             )
+            interval
         }
     }
 
@@ -95,7 +100,16 @@ class ReviewRepositoryImpl(
     }
 }
 
-private fun CardEntity.toReviewCard() = ReviewCard(id = id, front = front, back = back, example = example)
+private fun CardEntity.toReviewCard() = ReviewCard(
+    id = id,
+    front = front,
+    back = back,
+    example = example,
+    learningDue = lastReview
+        ?.let { due - it }
+        ?.takeIf { it in 1 until Duration.ofDays(1).toMillis() }
+        ?.let { Instant.ofEpochMilli(due) },
+)
 
 private fun CardEntity.toCardState() = CardState(
     stability = stability,
