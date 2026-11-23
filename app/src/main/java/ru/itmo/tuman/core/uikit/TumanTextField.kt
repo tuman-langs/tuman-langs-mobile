@@ -15,11 +15,16 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ru.itmo.tuman.core.uikit.theme.TumanPlaceholder
@@ -38,6 +43,34 @@ fun TumanTextField(
     placeholder: String? = null,
     error: String? = null,
     singleLine: Boolean = true,
+) {
+    var editingValue by remember { mutableStateOf(TextFieldValue(value)) }
+    val fieldValue = editingValue.copy(text = value)
+    SideEffect { editingValue = fieldValue }
+    TumanTextField(
+        value = fieldValue,
+        onValueChange = {
+            editingValue = it
+            if (it.text != value) onValueChange(it.text)
+        },
+        label = label,
+        modifier = modifier,
+        placeholder = placeholder,
+        error = error,
+        singleLine = singleLine,
+    )
+}
+
+@Composable
+fun TumanTextField(
+    value: TextFieldValue,
+    onValueChange: (TextFieldValue) -> Unit,
+    label: String,
+    modifier: Modifier = Modifier,
+    placeholder: String? = null,
+    error: String? = null,
+    singleLine: Boolean = true,
+    onFocusChanged: (Boolean) -> Unit = {},
 ) {
     val colors = MaterialTheme.colorScheme
     val interactionSource = remember { MutableInteractionSource() }
@@ -58,7 +91,7 @@ fun TumanTextField(
         BasicTextField(
             value = value,
             onValueChange = onValueChange,
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().onFocusChanged { onFocusChanged(it.isFocused) },
             singleLine = singleLine,
             textStyle = MaterialTheme.typography.bodyLarge.copy(color = colors.onSurface),
             cursorBrush = SolidColor(colors.primary),
@@ -72,7 +105,7 @@ fun TumanTextField(
                         .padding(horizontal = 14.dp, vertical = 13.dp),
                     contentAlignment = Alignment.CenterStart,
                 ) {
-                    if (value.isEmpty() && placeholder != null) {
+                    if (value.text.isEmpty() && placeholder != null) {
                         Text(
                             text = placeholder,
                             style = MaterialTheme.typography.bodyLarge,
