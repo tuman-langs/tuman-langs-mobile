@@ -52,7 +52,7 @@ class AcceptanceSmokeTest {
     @After fun close() { activity?.close() }
     private fun launch() {
         activity = ActivityScenario.launch(MainActivity::class.java)
-        waitText("Начать повторение")
+        waitText(context.getString(R.string.home_wordmark))
     }
     private fun waitText(text: String) {
         ui.waitUntil(10_000) { ui.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }
@@ -198,9 +198,12 @@ class AcceptanceSmokeTest {
         click("Прогресс")
         waitText("Прогресс появится после первого повторения")
         ui.onNodeWithText("0 XP").assertIsDisplayed()
+        ui.onNodeWithText(context.getString(R.string.progress_empty_achievement_first_10)).assertIsDisplayed()
+        ui.onNodeWithText(context.getString(R.string.progress_empty_achievement_streak_3)).assertIsDisplayed()
         photo("empty-progress")
         click("Главная")
         desc("Настройки")
+        waitText(context.getString(R.string.settings_title))
         ui.onNode(isToggleable()).assertIsOff().performClick()
         ui.waitUntil(5_000) { runBlocking { settings.settings.first().reminderEnabled } }
         photo("reminder-on")
