@@ -83,7 +83,24 @@ class ReviewViewModelTest {
         assertEquals(listOf(1L to Rating.AGAIN, 2L to Rating.GOOD), repository.submitted)
         assertEquals(2, viewModel.uiState.value.answersCount)
         assertEquals(1, viewModel.uiState.value.correctAnswers)
-        assertEquals(20, viewModel.uiState.value.earnedXp)
+        assertEquals(12, viewModel.uiState.value.earnedXp)
+    }
+
+    @Test
+    fun earnedXpMatchesSavedRatingsInMixedSession() {
+        repository = FakeReviewRepository((1L..10L).map(::card))
+        viewModel = ReviewViewModel(repository, now = { now })
+        val ratings = listOf(Rating.AGAIN) + List(3) {
+            listOf(Rating.HARD, Rating.GOOD, Rating.EASY)
+        }.flatten()
+
+        ratings.forEach(::answer)
+        assertEquals(1L, viewModel.uiState.value.currentCard?.id)
+        answer(Rating.GOOD)
+
+        assertTrue(viewModel.uiState.value.isFinished)
+        assertEquals(ratings, repository.submitted.map { it.second })
+        assertEquals(77, viewModel.uiState.value.earnedXp)
     }
 
     @Test

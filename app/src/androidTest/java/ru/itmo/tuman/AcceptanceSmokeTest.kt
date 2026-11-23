@@ -163,6 +163,7 @@ class AcceptanceSmokeTest {
         click("Показать ответ")
         click("хорошо")
         waitText("Сессия завершена")
+        ui.onNodeWithText(context.getString(R.string.review_xp, 77)).assertIsDisplayed()
         photo("review-summary")
         click("К прогрессу")
         waitText("77 XP")
