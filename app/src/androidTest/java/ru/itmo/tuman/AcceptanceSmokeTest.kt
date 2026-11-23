@@ -154,31 +154,41 @@ class AcceptanceSmokeTest {
             click("Показать ответ")
             if (ui.onAllNodesWithText("Понятно").fetchSemanticsNodes().isNotEmpty()) click("Понятно")
             listOf("не помню", "трудно", "хорошо", "легко").forEach { ui.onNodeWithText(it).assertIsDisplayed() }
-            val rating = if (index == 1) "не помню" else listOf("трудно", "хорошо", "легко")[(index - 2) % 3]
+            val rating = when (index) {
+                8 -> "не помню"
+                9 -> "трудно"
+                10 -> "хорошо"
+                else -> "легко"
+            }
             val start = SystemClock.elapsedRealtime()
             click(rating)
-            waitText(if (index < 10) "QA ${index + 1}" else "QA 1")
+            waitText(if (index < 10) "QA ${index + 1}" else "QA 8")
             timings += SystemClock.elapsedRealtime() - start
         }
-        click("Показать ответ")
-        click("хорошо")
+        for (index in 8..10) {
+            waitText("QA $index")
+            click("Показать ответ")
+            click("легко")
+        }
         waitText("Сессия завершена")
         photo("review-summary")
         click("К прогрессу")
-        waitText("77 XP")
+        waitText("117 XP")
         photo("progress")
         val progress = koin.get<ProgressRepository>().observeProgress().first()
-        assertEquals(10, progress.totalAnswers)
-        assertEquals(77, progress.xp)
+        assertEquals(13, progress.totalAnswers)
+        assertEquals(117, progress.xp)
         assertTrue(progress.isGoalDone)
         assertEquals(1, progress.currentStreak)
         assertEquals(6, progress.achievements.size)
         assertTrue(progress.achievements.count { it.isUnlocked } >= 2)
         val db = koin.get<TumanDatabase>()
-        ids.forEach { assertEquals(1, db.reviewDao().getByCard(it).size) }
-        val hard = decks.getCard(ids[1])!!
-        val easy = decks.getCard(ids[3])!!
-        assertTrue(hard.due!! < easy.due!!)
+        val histories = ids.map { db.reviewDao().getByCard(it) }
+        assertEquals(List(7) { 1 } + List(3) { 2 }, histories.map { it.size })
+        assertEquals(1.0, histories[0].first().intervalDays, 1e-9)
+        assertEquals(1.0 / 1440, histories[7].first().intervalDays, 1e-9)
+        assertEquals(6.0 / 1440, histories[8].first().intervalDays, 1e-9)
+        assertEquals(10.0 / 1440, histories[9].first().intervalDays, 1e-9)
         assertTrue(koin.get<ReviewRepository>().observeTodayCards(deck).first().isEmpty())
         File(evidence, "review-timings-ms.txt").writeText(timings.joinToString(","))
         click("Изменить цель")
@@ -190,7 +200,7 @@ class AcceptanceSmokeTest {
         photo("achievements")
         activity!!.recreate()
         waitText("Достижения")
-        assertEquals(77, koin.get<ProgressRepository>().observeProgress().first().xp)
+        assertEquals(117, koin.get<ProgressRepository>().observeProgress().first().xp)
     }
 
     @Test fun emptyProgressAndReminderToggle() = runBlocking {
