@@ -1,14 +1,12 @@
 package ru.itmo.tuman.core.navigation
 
 import androidx.annotation.StringRes
+import androidx.annotation.DrawableRes
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -18,7 +16,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,13 +26,13 @@ import androidx.navigation.NavDestination.Companion.hasRoute
 import ru.itmo.tuman.R
 import ru.itmo.tuman.core.uikit.theme.TumanTheme
 
-private class TumanTab(val route: Any, @StringRes val label: Int, val icon: ImageVector)
+private class TumanTab(val route: Any, @StringRes val label: Int, @DrawableRes val icon: Int? = null)
 
 private val tabs = listOf(
-    TumanTab(HomeRoute, R.string.tab_home, Icons.Filled.Home),
-    TumanTab(DecksRoute(), R.string.tab_decks, Icons.AutoMirrored.Filled.List),
-    TumanTab(CatalogRoute, R.string.tab_catalog, Icons.Filled.Search),
-    TumanTab(ProgressRoute, R.string.tab_progress, Icons.Filled.Star),
+    TumanTab(HomeRoute, R.string.tab_home),
+    TumanTab(DecksRoute(), R.string.tab_decks, R.drawable.ic_tab_decks),
+    TumanTab(CatalogRoute, R.string.tab_catalog, R.drawable.ic_tab_catalog),
+    TumanTab(ProgressRoute, R.string.tab_progress, R.drawable.ic_tab_progress),
 )
 
 /** true, если этот экран — одна из четырёх вкладок: только на них видна нижняя панель. */
@@ -60,7 +59,11 @@ fun TumanBottomBar(currentDestination: NavDestination?, onTabClick: (route: Any)
                 NavigationBarItem(
                     selected = currentDestination.isTabSelected(tab),
                     onClick = { onTabClick(tab.route) },
-                    icon = { Icon(imageVector = tab.icon, contentDescription = null) },
+                    icon = {
+                        val painter = tab.icon?.let { painterResource(it) }
+                            ?: rememberVectorPainter(Icons.Filled.Home)
+                        Icon(painter = painter, contentDescription = null)
+                    },
                     label = { Text(text = label, style = MaterialTheme.typography.labelSmall) },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = colors.primary,

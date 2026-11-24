@@ -16,6 +16,7 @@ fun DeckWithCardCount.toDomain(): Deck = Deck(
     title = deck.title,
     cardCount = cardCount,
     isFromCatalog = deck.source == DeckSource.CATALOG,
+    dueTodayCount = dueTodayCount,
 )
 
 fun CardWithReviewCount.toDomain(): Card = Card(

@@ -1,8 +1,9 @@
 package ru.itmo.tuman.core.uikit
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import ru.itmo.tuman.core.uikit.theme.TumanXp
  * Карточка набора: значок, название и подпись.
  * В [trailing] кладут то, что стоит справа: число карточек или кнопку «Скачать».
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun DeckCard(
     title: String,
@@ -41,6 +43,7 @@ fun DeckCard(
     badgeColor: Color = TumanPrimary,
     badgeBackground: Color = TumanPrimarySoft,
     onClick: (() -> Unit)? = null,
+    onLongClick: (() -> Unit)? = null,
     trailing: (@Composable () -> Unit)? = null,
 ) {
     val shape = RoundedCornerShape(18.dp)
@@ -48,7 +51,11 @@ fun DeckCard(
         modifier = modifier
             .fillMaxWidth()
             .clip(shape)
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+            .then(
+                if (onClick != null) {
+                    Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
+                } else Modifier,
+            ),
         shape = shape,
         color = MaterialTheme.colorScheme.surface,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline),

@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -19,6 +20,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -42,11 +44,15 @@ import ru.itmo.tuman.core.uikit.EmptyState
 import ru.itmo.tuman.core.uikit.TumanTopBar
 import ru.itmo.tuman.core.uikit.theme.TumanTheme
 import ru.itmo.tuman.features.decks.domain.model.Deck
+import ru.itmo.tuman.features.decks.ui.DeckBadgeHighlight
+import ru.itmo.tuman.features.decks.ui.DeckStatusBadge
 
 /** Экран со списком наборов: связывает ViewModel с разметкой из [DecksContent]. */
 @Composable
 fun DecksScreen(
     onDeckClick: (deckId: Long) -> Unit,
+    onReviewClick: (deckId: Long) -> Unit,
+    onCatalogClick: () -> Unit,
     viewModel: DecksViewModel = koinViewModel(),
     createOnOpen: Boolean = false,
 ) {
@@ -54,6 +60,8 @@ fun DecksScreen(
     DecksContent(state, createOnOpen = createOnOpen) { action ->
         when (action) {
             is DecksAction.Open -> onDeckClick(action.id)
+            is DecksAction.Review -> onReviewClick(action.id)
+            DecksAction.OpenCatalog -> onCatalogClick()
             is DecksAction.Create -> viewModel.onCreate(action.name)
             is DecksAction.Rename -> viewModel.onRename(action.id, action.name)
             is DecksAction.Delete -> viewModel.onDelete(action.id)
@@ -106,7 +114,11 @@ fun DecksContent(
             .padding(innerPadding)
         when {
             state.isLoading -> DecksLoading(modifier)
-            state.decks.isEmpty() -> DecksEmpty(modifier, onCreate = { showCreate = true })
+            state.decks.isEmpty() -> DecksEmpty(
+                modifier,
+                onCreate = { showCreate = true },
+                onCatalog = { onAction(DecksAction.OpenCatalog) },
+            )
             else -> DecksList(
                 decks = state.decks,
                 modifier = modifier,
@@ -131,7 +143,11 @@ fun DecksContent(
     when (val current = dialog) {
         null -> Unit
         is DecksDialog.Menu -> DeckMenuSheet(
-            deck = current.deck,
+            deck = state.decks.firstOrNull { it.id == current.deck.id } ?: current.deck,
+            onReview = {
+                close()
+                onAction(DecksAction.Review(current.deck.id))
+            },
             onRename = { dialog = DecksDialog.Rename(current.deck) },
             onDelete = { dialog = DecksDialog.Delete(current.deck) },
             onDismiss = close,
@@ -167,13 +183,16 @@ private fun DecksLoading(modifier: Modifier) {
 }
 
 @Composable
-private fun DecksEmpty(modifier: Modifier, onCreate: () -> Unit) {
+private fun DecksEmpty(modifier: Modifier, onCreate: () -> Unit, onCatalog: () -> Unit) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
         EmptyState(
             title = stringResource(R.string.decks_empty_title),
             text = stringResource(R.string.decks_empty_text),
             actionText = stringResource(R.string.decks_create_action),
             onAction = onCreate,
+            secondaryAction = {
+                TextButton(onClick = onCatalog) { Text(stringResource(R.string.home_open_catalog)) }
+            },
         )
     }
 }
@@ -197,13 +216,21 @@ private fun DecksList(
                 subtitle = deckSubtitle(deck),
                 badge = deck.title.take(1).uppercase(),
                 onClick = { onOpen(deck) },
+                onLongClick = { onMenu(deck) },
             ) {
-                IconButton(onClick = { onMenu(deck) }) {
-                    Icon(
-                        imageVector = Icons.Filled.MoreVert,
-                        contentDescription = stringResource(R.string.decks_menu_description),
-                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    DeckStatusBadge(
+                        text = deck.dueTodayCount.toString(),
+                        highlight = if (deck.dueTodayCount > 0) DeckBadgeHighlight.Due else DeckBadgeHighlight.Neutral,
+                        description = stringResource(R.string.deck_due_today, deck.dueTodayCount),
                     )
+                    IconButton(onClick = { onMenu(deck) }) {
+                        Icon(
+                            imageVector = Icons.Filled.MoreVert,
+                            contentDescription = stringResource(R.string.decks_menu_description),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
             }
         }

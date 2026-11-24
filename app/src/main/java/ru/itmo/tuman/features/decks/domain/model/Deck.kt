@@ -12,4 +12,5 @@ data class Deck(
     val title: String,
     val cardCount: Int,
     val isFromCatalog: Boolean,
+    val dueTodayCount: Int = 0,
 )
