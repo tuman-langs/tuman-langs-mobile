@@ -52,7 +52,7 @@ class AcceptanceSmokeTest {
     @After fun close() { activity?.close() }
     private fun launch() {
         activity = ActivityScenario.launch(MainActivity::class.java)
-        waitText("Начать повторение")
+        waitText(context.getString(R.string.home_wordmark))
     }
     private fun waitText(text: String) {
         ui.waitUntil(10_000) { ui.onAllNodesWithText(text).fetchSemanticsNodes().isNotEmpty() }
@@ -171,13 +171,16 @@ class AcceptanceSmokeTest {
             click("легко")
         }
         waitText("Сессия завершена")
+        // В зачёт — первый ответ по карточке за день: 7 × «легко» + «не помню» + «трудно» + «хорошо».
+        // Повторы коротких шагов XP не добавляют, поэтому итог сессии и прогресс совпадают.
+        ui.onNodeWithText(context.getString(R.string.review_xp, 87)).assertIsDisplayed()
         photo("review-summary")
         click("К прогрессу")
-        waitText("117 XP")
+        waitText("87 XP")
         photo("progress")
         val progress = koin.get<ProgressRepository>().observeProgress().first()
-        assertEquals(13, progress.totalAnswers)
-        assertEquals(117, progress.xp)
+        assertEquals(10, progress.totalAnswers)
+        assertEquals(87, progress.xp)
         assertTrue(progress.isGoalDone)
         assertEquals(1, progress.currentStreak)
         assertEquals(6, progress.achievements.size)
@@ -200,7 +203,7 @@ class AcceptanceSmokeTest {
         photo("achievements")
         activity!!.recreate()
         waitText("Достижения")
-        assertEquals(117, koin.get<ProgressRepository>().observeProgress().first().xp)
+        assertEquals(87, koin.get<ProgressRepository>().observeProgress().first().xp)
     }
 
     @Test fun emptyProgressAndReminderToggle() = runBlocking {
@@ -208,9 +211,12 @@ class AcceptanceSmokeTest {
         click("Прогресс")
         waitText("Прогресс появится после первого повторения")
         ui.onNodeWithText("0 XP").assertIsDisplayed()
+        ui.onNodeWithText(context.getString(R.string.progress_empty_achievement_first_10)).assertIsDisplayed()
+        ui.onNodeWithText(context.getString(R.string.progress_empty_achievement_streak_3)).assertIsDisplayed()
         photo("empty-progress")
         click("Главная")
         desc("Настройки")
+        waitText(context.getString(R.string.settings_title))
         ui.onNode(isToggleable()).assertIsOff().performClick()
         ui.waitUntil(5_000) { runBlocking { settings.settings.first().reminderEnabled } }
         photo("reminder-on")

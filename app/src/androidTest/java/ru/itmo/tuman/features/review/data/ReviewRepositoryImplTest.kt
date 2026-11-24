@@ -104,6 +104,20 @@ class ReviewRepositoryImplTest {
     }
 
     @Test
+    fun todayCardsCarryTheirOwnDeckTitles() = runBlocking {
+        val first = db.deckDao().insert(DeckEntity(title = "Первый набор", createdAt = NOW_MS))
+        val second = db.deckDao().insert(DeckEntity(title = "Второй набор", createdAt = NOW_MS))
+        val firstCard = newCard(first, "слово 1")
+        val secondCard = newCard(second, "слово 2")
+
+        val all = repository().observeTodayCards().first()
+        val currentDeck = repository().observeTodayCards(deckId = second).first()
+
+        assertEquals(listOf(firstCard to "Первый набор", secondCard to "Второй набор"), all.map { it.id to it.deckTitle })
+        assertEquals(listOf(secondCard), currentDeck.map { it.id })
+    }
+
+    @Test
     fun dueCardsGoFirstOverdueFirstThenNewUpToDailyGoal() = runBlocking {
         val deckId = newDeck()
         val new = (1..DAILY_GOAL).map { newCard(deckId, "новая $it") }

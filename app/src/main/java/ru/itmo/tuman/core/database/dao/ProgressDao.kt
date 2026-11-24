@@ -13,8 +13,8 @@ import ru.itmo.tuman.core.database.entity.CardEntity
 @Dao
 interface ProgressDao {
 
-    /** Вся история ответов: оценка и время. */
-    @Query("SELECT rating, reviewed_at FROM reviews ORDER BY reviewed_at")
+    /** Вся история ответов: карточка, оценка и время. */
+    @Query("SELECT card_id, rating, reviewed_at FROM reviews ORDER BY reviewed_at")
     fun observeAnswers(): Flow<List<AnswerRow>>
 
     /** Карточки, на которые уже отвечали, — среди них ищем выученные. */

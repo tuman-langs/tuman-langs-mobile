@@ -1,8 +1,10 @@
 package ru.itmo.tuman.di
 
+import android.content.Context
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import org.koin.core.module.dsl.viewModel
+import org.koin.core.parameter.ParametersHolder
 import org.koin.dsl.module
 import ru.itmo.tuman.core.reminders.ReminderInfo
 import ru.itmo.tuman.core.reminders.ReminderInfoSource
@@ -20,8 +22,11 @@ import ru.itmo.tuman.features.home.ui.HomeToday
 import ru.itmo.tuman.features.home.ui.HomeViewModel
 import ru.itmo.tuman.features.progress.di.progressModule
 import ru.itmo.tuman.features.progress.domain.ProgressRepository
+import ru.itmo.tuman.features.progress.ui.titleRes
 import ru.itmo.tuman.features.review.di.reviewModule
 import ru.itmo.tuman.features.review.domain.ReviewRepository
+import ru.itmo.tuman.features.review.ui.ReviewProgressSnapshot
+import ru.itmo.tuman.features.review.ui.ReviewViewModel
 import ru.itmo.tuman.features.settings.di.settingsUiModule
 
 /**
@@ -56,6 +61,26 @@ val appModule = module {
                 decksRepository.observeDecks().map { decks ->
                     decks.map { HomeDeck(it.id, it.title, it.cardCount) }
                 }
+            },
+        )
+    }
+
+    viewModel { parameters: ParametersHolder ->
+        val progressRepository = get<ProgressRepository>()
+        val context = get<Context>()
+        ReviewViewModel(
+            repository = get(),
+            deckId = parameters.getOrNull<Long>(),
+            settingsRepository = get(),
+            readProgress = {
+                val progress = progressRepository.observeProgress().first()
+                ReviewProgressSnapshot(
+                    goalDone = progress.isGoalDone,
+                    streak = progress.currentStreak,
+                    unlockedAchievements = progress.achievements.filter { it.isUnlocked }
+                        .map { context.getString(it.type.titleRes()) },
+                    xp = progress.xp,
+                )
             },
         )
     }

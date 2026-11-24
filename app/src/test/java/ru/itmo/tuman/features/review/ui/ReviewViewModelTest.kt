@@ -82,7 +82,25 @@ class ReviewViewModelTest {
         assertEquals(listOf(1L to Rating.AGAIN, 2L to Rating.GOOD, 1L to Rating.GOOD), repository.submitted)
         assertEquals(2, viewModel.uiState.value.answersCount)
         assertEquals(1, viewModel.uiState.value.correctAnswers)
-        assertEquals(20, viewModel.uiState.value.earnedXp)
+        assertEquals(12, viewModel.uiState.value.earnedXp)
+    }
+
+    @Test
+    fun earnedXpMatchesSavedRatingsInMixedSession() {
+        repository = FakeReviewRepository((1L..10L).map(::card))
+        viewModel = ReviewViewModel(repository, now = { now })
+        val ratings = listOf(Rating.AGAIN) + List(3) {
+            listOf(Rating.HARD, Rating.GOOD, Rating.EASY)
+        }.flatten()
+
+        ratings.forEach(::answer)
+        assertEquals(1L, viewModel.uiState.value.currentCard?.id)
+        answer(Rating.GOOD)
+
+        assertTrue(viewModel.uiState.value.isFinished)
+        // Повтор после «не помню» тоже сохраняется (короткий шаг), но XP за карточку — один раз
+        assertEquals(ratings + Rating.GOOD, repository.submitted.map { it.second })
+        assertEquals(77, viewModel.uiState.value.earnedXp)
     }
 
     @Test
@@ -111,6 +129,72 @@ class ReviewViewModelTest {
         answer(Rating.GOOD)
         assertTrue(viewModel.uiState.value.isFinished)
         assertEquals(3, repository.submitted.size)
+    }
+
+    @Test
+    fun summaryShowsCurrentProgressAndOnlyAnAchievementUnlockedDuringSession() {
+        viewModel = ReviewViewModel(
+            repository,
+            now = { now },
+            readProgress = {
+                if (repository.submitted.size == 2) {
+                    ReviewProgressSnapshot(true, 3, listOf("Первый набор", "10 карточек"))
+                } else {
+                    ReviewProgressSnapshot(false, 2, listOf("Первый набор"))
+                }
+            },
+        )
+
+        answer(Rating.GOOD)
+        answer(Rating.EASY)
+
+        assertEquals(
+            ReviewSummaryStats(goalDone = true, streak = 3, unlockedAchievement = "10 карточек"),
+            viewModel.uiState.value.summaryStats,
+        )
+    }
+
+    /**
+     * XP в итоге сессии — разница XP прогресса до и после сессии. Если часть карточек уже
+     * засчитана сегодня в другой сессии, итог не покажет за них лишние очки.
+     */
+    @Test
+    fun summaryXpEqualsProgressXpDelta() {
+        viewModel = ReviewViewModel(
+            repository,
+            now = { now },
+            readProgress = {
+                val xp = if (repository.submitted.isEmpty()) 40 else 50
+                ReviewProgressSnapshot(goalDone = false, streak = 1, unlockedAchievements = emptyList(), xp = xp)
+            },
+        )
+
+        answer(Rating.GOOD)
+        assertEquals("во время сессии — по оценкам", 10, viewModel.uiState.value.earnedXp)
+        answer(Rating.EASY)
+
+        assertTrue(viewModel.uiState.value.isFinished)
+        assertEquals("в итоге — как в прогрессе: 50 − 40", 10, viewModel.uiState.value.earnedXp)
+        assertEquals(2, viewModel.uiState.value.answersCount)
+    }
+
+    @Test
+    fun practiceDoesNotReadProgressOrShowHint() {
+        var progressReads = 0
+        val practice = ReviewViewModel(
+            FakeReviewRepository(emptyList(), listOf(card(1))),
+            deckId = 42,
+            now = { now },
+            readProgress = { progressReads++; null },
+        )
+
+        practice.onRevealAnswer()
+        assertFalse("подсказка про оценки не нужна в тренировке", practice.uiState.value.isHintVisible)
+        practice.onRatingSelected(Rating.GOOD)
+
+        assertTrue(practice.uiState.value.isFinished)
+        assertNull(practice.uiState.value.summaryStats)
+        assertEquals(0, progressReads)
     }
 
     @Test

@@ -13,5 +13,6 @@ data class ReviewCard(
     val front: String,
     val back: String,
     val example: String? = null,
+    val deckTitle: String = "",
     val learningDue: Instant? = null,
 )

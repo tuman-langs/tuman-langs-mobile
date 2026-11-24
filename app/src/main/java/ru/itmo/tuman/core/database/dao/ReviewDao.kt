@@ -1,6 +1,8 @@
 package ru.itmo.tuman.core.database.dao
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
+import androidx.room.Embedded
 import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
@@ -31,13 +33,14 @@ interface ReviewDao {
      */
     @Query(
         """
-        SELECT * FROM cards
-        WHERE due < :startOfNextDay AND (:deckId IS NULL OR deck_id = :deckId)
-        ORDER BY last_review IS NULL, due, id
+        SELECT cards.*, decks.title AS deck_title
+        FROM cards INNER JOIN decks ON decks.id = cards.deck_id
+        WHERE cards.due < :startOfNextDay AND (:deckId IS NULL OR cards.deck_id = :deckId)
+        ORDER BY cards.last_review IS NULL, cards.due, cards.id
         LIMIT :limit
         """,
     )
-    fun observeTodayCards(startOfNextDay: Long, deckId: Long?, limit: Int): Flow<List<CardEntity>>
+    fun observeTodayCards(startOfNextDay: Long, deckId: Long?, limit: Int): Flow<List<ReviewCardRow>>
 
     /** Сколько карточек на повторение и сколько новых до [startOfNextDay], по всем наборам. */
     @Query(
@@ -51,3 +54,9 @@ interface ReviewDao {
     )
     fun observeTodayCounts(startOfNextDay: Long): Flow<TodayCounts>
 }
+
+/** Карточка на сегодня с названием набора для экрана повторения. */
+data class ReviewCardRow(
+    @Embedded val card: CardEntity,
+    @ColumnInfo(name = "deck_title") val deckTitle: String,
+)

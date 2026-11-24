@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import ru.itmo.tuman.core.utils.Xp
 import ru.itmo.tuman.features.progress.domain.model.AchievementType
 import ru.itmo.tuman.features.progress.domain.model.Answer
 import ru.itmo.tuman.srs.Rating
@@ -17,7 +18,10 @@ class ProgressCalculatorTest {
     private val zone = ZoneId.of("Europe/Moscow")
     private val now = Instant.parse("2026-11-18T12:00:00Z")
 
-    private fun answer(rating: Rating, at: String) = Answer(grade = rating.grade, at = Instant.parse(at))
+    // По умолчанию каждый ответ — по своей карточке
+    private var nextCardId = 1L
+    private fun answer(rating: Rating, at: String, cardId: Long = nextCardId++) =
+        Answer(cardId = cardId, grade = rating.grade, at = Instant.parse(at))
 
     private fun calculate(answers: List<Answer>, goal: Int = 2, learned: Int = 0, decks: Int = 0) =
         ProgressCalculator.calculate(answers, learned, decks, goal, now, zone)
@@ -107,5 +111,38 @@ class ProgressCalculatorTest {
         assertTrue(achievements.getValue(AchievementType.STREAK_3_DAYS).isUnlocked)
         assertEquals(6, achievements.getValue(AchievementType.WEEK_NO_GAPS).current)
         assertEquals(1, achievements.getValue(AchievementType.WEEK_NO_GAPS).remaining)
+    }
+
+    /** Короткие шаги: повторные ответы по той же карточке в тот же день не добавляют XP и не двигают цель. */
+    @Test
+    fun repeatedAnswersForSameCardSameDayCountOnce() {
+        val answers = listOf(
+            answer(Rating.AGAIN, "2026-11-18T08:00:00Z", cardId = 1),
+            answer(Rating.GOOD, "2026-11-18T08:01:00Z", cardId = 1),
+            answer(Rating.GOOD, "2026-11-18T08:11:00Z", cardId = 1),
+        )
+
+        val progress = calculate(answers, goal = 2)
+
+        assertEquals("в зачёт первый ответ дня — «не помню»", Xp.forRating(Rating.AGAIN), progress.xp)
+        assertEquals(1, progress.todayAnswers)
+        assertEquals(1, progress.totalAnswers)
+        assertEquals(0.0, progress.accuracy!!, 1e-9)
+        assertFalse("одна карточка не закрывает цель из двух", progress.isGoalDone)
+    }
+
+    /** На следующий день та же карточка снова идёт в зачёт. */
+    @Test
+    fun sameCardOnNextDayCountsAgain() {
+        val answers = listOf(
+            answer(Rating.GOOD, "2026-11-17T08:00:00Z", cardId = 1),
+            answer(Rating.GOOD, "2026-11-18T08:00:00Z", cardId = 1),
+        )
+
+        val progress = calculate(answers, goal = 1)
+
+        assertEquals(2 * Xp.forRating(Rating.GOOD), progress.xp)
+        assertEquals(1, progress.todayAnswers)
+        assertEquals(2, progress.currentStreak)
     }
 }

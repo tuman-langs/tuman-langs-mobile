@@ -1,4 +1,4 @@
-package ru.itmo.tuman.features.progress.domain
+package ru.itmo.tuman.core.utils
 
 import ru.itmo.tuman.srs.Rating
 

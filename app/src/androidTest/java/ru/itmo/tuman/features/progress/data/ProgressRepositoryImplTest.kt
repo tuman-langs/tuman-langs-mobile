@@ -66,8 +66,14 @@ class ProgressRepositoryImplTest {
         assertEquals(2.0 / 3, progress.accuracy!!, 1e-9)
         assertTrue(progress.achievements.single { it.type == AchievementType.FIRST_DECK }.isUnlocked)
 
-        // Ещё один ответ сегодня — цель выполнена, серия 2, пересчёт без перезапуска
+        // Повторный ответ по той же карточке сегодня (короткий шаг) в зачёт не идёт
         db.reviewDao().insert(ReviewEntity(cardId = fresh, rating = 2, reviewedAt = NOW_MS + 1000, intervalDays = 2.0))
+        val repeated = repository.observeProgress().first()
+        assertEquals(1, repeated.todayAnswers)
+        assertEquals(10 + 2 + 10, repeated.xp)
+
+        // Ответ по другой карточке сегодня — цель выполнена, серия 2, пересчёт без перезапуска
+        db.reviewDao().insert(ReviewEntity(cardId = learned, rating = 2, reviewedAt = NOW_MS + 2000, intervalDays = 2.0))
         val updated = repository.observeProgress().first()
         assertEquals(2, updated.todayAnswers)
         assertEquals(2, updated.currentStreak)

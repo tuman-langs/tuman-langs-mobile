@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import ru.itmo.tuman.core.database.TumanDatabase
+import ru.itmo.tuman.core.database.dao.ReviewCardRow
 import ru.itmo.tuman.core.database.entity.CardEntity
 import ru.itmo.tuman.core.database.entity.ReviewEntity
 import ru.itmo.tuman.features.review.domain.ReviewRepository
@@ -51,7 +52,9 @@ class ReviewRepositoryImpl(
             .map { rows -> rows.map { it.toReviewCard() } }
 
     override suspend fun getPracticeCards(deckId: Long): List<ReviewCard> =
-        cardDao.getByDeck(deckId).map { it.toReviewCard() }
+        db.deckDao().getById(deckId)?.title.orEmpty().let { title ->
+            cardDao.getByDeck(deckId).map { it.toReviewCard(title) }
+        }
 
     override fun observeTodayCount(): Flow<TodayCount> =
         combine(reviewDao.observeTodayCounts(startOfNextDayMillis()), dailyGoal) { counts, goal ->
@@ -100,11 +103,15 @@ class ReviewRepositoryImpl(
     }
 }
 
-private fun CardEntity.toReviewCard() = ReviewCard(
+private fun ReviewCardRow.toReviewCard() = card.toReviewCard(deckTitle)
+
+private fun CardEntity.toReviewCard(deckTitle: String) = ReviewCard(
     id = id,
     front = front,
     back = back,
     example = example,
+    deckTitle = deckTitle,
+    // Короткий шаг (меньше суток после ответа) — карточку можно показать ещё раз в этой же сессии
     learningDue = lastReview
         ?.let { due - it }
         ?.takeIf { it in 1 until Duration.ofDays(1).toMillis() }
