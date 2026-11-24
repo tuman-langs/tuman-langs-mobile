@@ -1,5 +1,6 @@
 package ru.itmo.tuman.features.progress.domain
 
+import ru.itmo.tuman.core.utils.Xp
 import ru.itmo.tuman.features.progress.domain.model.Achievement
 import ru.itmo.tuman.features.progress.domain.model.AchievementType
 import ru.itmo.tuman.features.progress.domain.model.Answer

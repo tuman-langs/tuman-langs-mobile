@@ -5,6 +5,7 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import ru.itmo.tuman.core.utils.Xp
 import ru.itmo.tuman.features.progress.domain.model.AchievementType
 import ru.itmo.tuman.features.progress.domain.model.Answer
 import ru.itmo.tuman.srs.Rating
