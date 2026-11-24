@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.itmo.tuman.R
 import ru.itmo.tuman.core.settings.SettingsRepository
+import ru.itmo.tuman.core.utils.Xp
 import ru.itmo.tuman.features.review.domain.ReviewRepository
 import ru.itmo.tuman.features.review.domain.model.ReviewCard
 import ru.itmo.tuman.srs.Rating
@@ -112,7 +113,7 @@ class ReviewViewModel(
                 val counted = if (isRepeat) 0 else 1
                 val nextAnswersCount = state.answersCount + counted
                 val nextCorrectAnswers = state.correctAnswers + if (isRepeat || rating == Rating.AGAIN) 0 else 1
-                val nextXp = state.earnedXp + XP_PER_ANSWER * counted
+                val nextXp = state.earnedXp + if (isRepeat) 0 else Xp.forRating(rating)
                 if (nextPosition >= sessionCards.size) {
                     val summaryStats = loadProgress()?.let { progress ->
                         val previous = progressBeforeSession?.unlockedAchievements
@@ -199,9 +200,5 @@ class ReviewViewModel(
                 _uiState.update { it.copy(errorRes = R.string.review_error_intervals) }
             }
         }
-    }
-
-    private companion object {
-        const val XP_PER_ANSWER = 10
     }
 }

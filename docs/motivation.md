@@ -3,7 +3,8 @@
 Автор: Бондаренко Е. Задача #30. ТЗ: ФТ-8 (дневная цель и серия), ФТ-9 (достижения), ФТ-10 (прогресс), критерий приёмки 5 («начисляется по заданным правилам»).
 
 Код:
-- правила (чистые функции, без Android и Room) — `features/progress/domain/`: `Xp.kt`, `Streak.kt`, `Achievements.kt`;
+- правила серии и достижений — `features/progress/domain/`: `Streak.kt`, `Achievements.kt`;
+- общее правило начисления XP для повторения и прогресса — `core/utils/Xp.kt`;
 - сбор данных из базы — `features/progress/data/ProgressRepositoryImpl.kt`;
 - дневная цель и другие настройки — `core/settings/` (DataStore).
 
