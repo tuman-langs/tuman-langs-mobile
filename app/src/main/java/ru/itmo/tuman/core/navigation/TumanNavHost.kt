@@ -85,6 +85,10 @@ fun TumanNavHost(navController: NavHostController = rememberNavController()) {
             composable<DecksRoute> { entry ->
                 DecksScreen(
                     createOnOpen = entry.toRoute<DecksRoute>().createOnOpen,
+                    onCatalogClick = { if (navController.canNavigate()) navController.openTab(CatalogRoute) },
+                    onReviewClick = { deckId ->
+                        if (navController.canNavigate()) navController.navigate(ReviewRoute(deckId))
+                    },
                     onDeckClick = { deckId ->
                         if (navController.canNavigate()) navController.navigate(DeckRoute(deckId))
                     },

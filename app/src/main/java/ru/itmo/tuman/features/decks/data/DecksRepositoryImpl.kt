@@ -1,7 +1,11 @@
 package ru.itmo.tuman.features.decks.data
 
 import androidx.room.withTransaction
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import ru.itmo.tuman.core.database.TumanDatabase
 import ru.itmo.tuman.core.database.entity.DeckEntity
@@ -10,6 +14,9 @@ import ru.itmo.tuman.features.decks.domain.DecksRepository
 import ru.itmo.tuman.features.decks.domain.model.Card
 import ru.itmo.tuman.features.decks.domain.model.CatalogSet
 import ru.itmo.tuman.features.decks.domain.model.Deck
+import ru.itmo.tuman.srs.DueCards
+import java.time.Instant
+import java.time.ZoneId
 
 /**
  * Реализация [DecksRepository] через базу Room.
@@ -25,8 +32,17 @@ class DecksRepositoryImpl(
     private val deckDao = db.deckDao()
     private val cardDao = db.cardDao()
 
-    override fun observeDecks(): Flow<List<Deck>> =
-        deckDao.observeAllWithCardCount().map { rows -> rows.map { it.toDomain() } }
+    @OptIn(ExperimentalCoroutinesApi::class)
+    override fun observeDecks(): Flow<List<Deck>> = flow {
+        while (true) {
+            val currentTime = now()
+            val nextDay = DueCards.startOfNextDay(Instant.ofEpochMilli(currentTime), ZoneId.systemDefault())
+            emit(nextDay.toEpochMilli())
+            delay(nextDay.toEpochMilli() - currentTime)
+        }
+    }.flatMapLatest { dueBefore ->
+        deckDao.observeAllWithCardCount(dueBefore).map { rows -> rows.map { it.toDomain() } }
+    }
 
     override suspend fun createDeck(title: String): Long =
         deckDao.insert(DeckEntity(title = title.trim(), createdAt = now()))

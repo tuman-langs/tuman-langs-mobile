@@ -51,6 +51,8 @@
     <!-- Экран набора -->
     <string name="deck_add_card">Добавить карточку</string>
     <string name="deck_due_today">%1$d на сегодня</string>
+    <string name="deck_cards_heading">Карточки · %1$d</string>
+    <string name="decks_menu_review">Повторить</string>
     <string name="deck_summary">%1$s · выучено %2$d</string>
     <string name="deck_study">Учить</string>
     <string name="deck_empty_title">В наборе нет карточек</string>

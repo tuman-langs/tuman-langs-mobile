@@ -12,4 +12,6 @@ data class DeckWithCardCount(
     val deck: DeckEntity,
     @ColumnInfo(name = "card_count")
     val cardCount: Int,
+    @ColumnInfo(name = "due_today_count")
+    val dueTodayCount: Int,
 )

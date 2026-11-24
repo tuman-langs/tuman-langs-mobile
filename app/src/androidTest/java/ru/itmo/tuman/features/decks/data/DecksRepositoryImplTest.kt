@@ -15,6 +15,9 @@ import org.junit.runner.RunWith
 import ru.itmo.tuman.core.database.TumanDatabase
 import ru.itmo.tuman.core.database.entity.ReviewEntity
 import ru.itmo.tuman.features.decks.domain.model.Card
+import ru.itmo.tuman.srs.DueCards
+import java.time.Instant
+import java.time.ZoneId
 
 /**
  * Проверка репозитория наборов на настоящей базе Room в памяти (эмулятор).
@@ -62,6 +65,22 @@ class DecksRepositoryImplTest {
         val counts = repository.observeDecks().first().associate { it.title to it.cardCount }
 
         assertEquals(mapOf("Полный" to 2, "Пустой" to 0), counts)
+    }
+
+    @Test
+    fun dueCountsArePerDeckAndExcludeTomorrow() = runBlocking {
+        val first = repository.createDeck("Первый")
+        val second = repository.createDeck("Второй")
+        repository.createDeck("Пустой")
+        val tomorrow = DueCards.startOfNextDay(Instant.ofEpochMilli(NOW), ZoneId.systemDefault()).toEpochMilli()
+        val lastDue = repository.saveCard(Card(deckId = first, front = "әсәй", back = "мама"))
+        val future = repository.saveCard(Card(deckId = first, front = "һыу", back = "вода"))
+        repository.saveCard(Card(deckId = second, front = "ат", back = "лошадь"))
+        db.cardDao().update(db.cardDao().getById(lastDue)!!.copy(due = tomorrow - 1))
+        db.cardDao().update(db.cardDao().getById(future)!!.copy(due = tomorrow))
+
+        val counts = repository.observeDecks().first().associate { it.title to it.dueTodayCount }
+        assertEquals(mapOf("Первый" to 1, "Второй" to 1, "Пустой" to 0), counts)
     }
 
     @Test

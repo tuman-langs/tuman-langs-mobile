@@ -36,6 +36,7 @@ fun EmptyState(
     actionText: String? = null,
     @DrawableRes illustration: Int? = null,
     onAction: () -> Unit = {},
+    secondaryAction: (@Composable () -> Unit)? = null,
 ) {
     Column(
         modifier = modifier
@@ -75,6 +76,7 @@ fun EmptyState(
             Spacer(Modifier.height(18.dp))
             TumanPrimaryButton(actionText, onAction)
         }
+        secondaryAction?.invoke()
     }
 }
 

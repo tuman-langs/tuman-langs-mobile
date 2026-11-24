@@ -17,6 +17,8 @@ data class DecksUiState(
 /** Что пользователь может сделать на экране наборов. */
 sealed interface DecksAction {
     data class Open(val id: Long) : DecksAction
+    data class Review(val id: Long) : DecksAction
+    data object OpenCatalog : DecksAction
     data class Create(val name: String) : DecksAction
     data class Rename(val id: Long, val name: String) : DecksAction
     data class Delete(val id: Long) : DecksAction

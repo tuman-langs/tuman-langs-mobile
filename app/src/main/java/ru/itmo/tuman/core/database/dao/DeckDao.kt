@@ -43,13 +43,14 @@ interface DeckDao {
      */
     @Query(
         """
-        SELECT decks.*, COUNT(cards.id) AS card_count
+        SELECT decks.*, COUNT(cards.id) AS card_count,
+            COUNT(CASE WHEN cards.due < :dueBefore THEN 1 END) AS due_today_count
         FROM decks LEFT JOIN cards ON cards.deck_id = decks.id
         GROUP BY decks.id
         ORDER BY decks.created_at DESC, decks.id DESC
         """,
     )
-    fun observeAllWithCardCount(): Flow<List<DeckWithCardCount>>
+    fun observeAllWithCardCount(dueBefore: Long): Flow<List<DeckWithCardCount>>
 
     @Query("UPDATE decks SET title = :title WHERE id = :id")
     suspend fun rename(id: Long, title: String)

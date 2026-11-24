@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -93,6 +94,7 @@ internal fun DeleteDeckDialog(deck: Deck, onConfirm: () -> Unit, onDismiss: () -
 @Composable
 internal fun DeckMenuSheet(
     deck: Deck,
+    onReview: () -> Unit,
     onRename: () -> Unit,
     onDelete: () -> Unit,
     onDismiss: () -> Unit,
@@ -103,6 +105,17 @@ internal fun DeckMenuSheet(
                 text = deck.title,
                 style = MaterialTheme.typography.titleSmall,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+            )
+            ListItem(
+                headlineContent = {
+                    Text(
+                        stringResource(R.string.decks_menu_review),
+                        color = if (deck.cardCount > 0) MaterialTheme.colorScheme.onSurface
+                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                },
+                leadingContent = { Icon(Icons.Filled.PlayArrow, contentDescription = null) },
+                modifier = Modifier.clickable(enabled = deck.cardCount > 0, onClick = onReview),
             )
             ListItem(
                 headlineContent = { Text(stringResource(R.string.decks_menu_rename)) },

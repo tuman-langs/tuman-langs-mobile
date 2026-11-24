@@ -4,19 +4,27 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,13 +41,13 @@ import androidx.compose.ui.unit.dp
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
 import ru.itmo.tuman.R
-import ru.itmo.tuman.core.uikit.DeckCard
 import ru.itmo.tuman.core.uikit.DeckCardSkeleton
 import ru.itmo.tuman.core.uikit.EmptyState
-import ru.itmo.tuman.core.uikit.TumanPrimaryButton
 import ru.itmo.tuman.core.uikit.TumanTopBar
 import ru.itmo.tuman.core.uikit.theme.TumanTheme
 import ru.itmo.tuman.features.decks.domain.model.Card
+import ru.itmo.tuman.features.decks.ui.DeckBadgeHighlight
+import ru.itmo.tuman.features.decks.ui.DeckStatusBadge
 import ru.itmo.tuman.srs.CardStatus
 
 /**
@@ -127,21 +135,50 @@ private fun DeckCardList(state: DeckUiState, modifier: Modifier, onAction: (Deck
         modifier = modifier,
         // Снизу запас, чтобы кнопка «+» не закрывала последнюю карточку
         contentPadding = PaddingValues(start = 16.dp, top = 8.dp, end = 16.dp, bottom = 88.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item { DeckHeader(state, onStudy = { onAction(DeckAction.Study) }) }
-        items(state.cards, key = { it.card.id }) { item ->
-            DeckCard(
-                title = item.card.front,
-                subtitle = item.card.back,
-                badge = item.card.front.take(1).uppercase(),
+        item {
+            Text(
+                text = stringResource(R.string.deck_cards_heading, state.cards.size),
+                modifier = Modifier.padding(top = 12.dp, bottom = 8.dp),
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        itemsIndexed(state.cards, key = { _, item -> item.card.id }) { index, item ->
+            val topRadius = if (index == 0) 18.dp else 0.dp
+            val isLast = index == state.cards.lastIndex
+            val bottomRadius = if (isLast) 18.dp else 0.dp
+            Surface(
                 onClick = { onAction(DeckAction.OpenCard(item.card.id)) },
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(topRadius, topRadius, bottomRadius, bottomRadius),
             ) {
-                Text(
-                    text = statusLabel(item.status),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                Column {
+                    Row(
+                        modifier = Modifier.padding(12.dp),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(item.card.front, style = MaterialTheme.typography.titleSmall)
+                            Text(
+                                item.card.back,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        DeckStatusBadge(
+                            text = statusLabel(item.status),
+                            highlight = when (item.status) {
+                                CardStatus.DueToday -> DeckBadgeHighlight.Due
+                                CardStatus.Learned -> DeckBadgeHighlight.Learned
+                                else -> DeckBadgeHighlight.Neutral
+                            },
+                        )
+                    }
+                    if (!isLast) HorizontalDivider(color = MaterialTheme.colorScheme.outline)
+                }
             }
         }
     }
@@ -149,28 +186,46 @@ private fun DeckCardList(state: DeckUiState, modifier: Modifier, onAction: (Deck
 
 @Composable
 private fun DeckHeader(state: DeckUiState, onStudy: () -> Unit) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(bottom = 4.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        modifier = Modifier.fillMaxWidth(),
+        color = colors.primary,
+        contentColor = colors.onPrimary,
+        shape = RoundedCornerShape(18.dp),
     ) {
-        Text(
-            text = stringResource(R.string.deck_due_today, state.dueTodayCount),
-            style = MaterialTheme.typography.headlineSmall,
-        )
-        val cards = pluralStringResource(R.plurals.decks_card_count, state.cards.size, state.cards.size)
-        Text(
-            text = stringResource(R.string.deck_summary, cards, state.learnedCount),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        TumanPrimaryButton(
-            text = stringResource(R.string.deck_study),
-            onClick = onStudy,
-            modifier = Modifier.fillMaxWidth(),
-            enabled = state.dueTodayCount > 0,
-        )
+        Row(
+            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = stringResource(R.string.deck_due_today, state.dueTodayCount),
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+                val cards = pluralStringResource(R.plurals.decks_card_count, state.cards.size, state.cards.size)
+                Text(
+                    text = stringResource(R.string.deck_summary, cards, state.learnedCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onPrimary.copy(alpha = 0.8f),
+                )
+            }
+            Button(
+                onClick = onStudy,
+                enabled = state.dueTodayCount > 0,
+                shape = RoundedCornerShape(11.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colors.onPrimary,
+                    contentColor = colors.primary,
+                    disabledContainerColor = colors.onPrimary.copy(alpha = 0.2f),
+                    disabledContentColor = colors.onPrimary.copy(alpha = 0.75f),
+                ),
+                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+            ) {
+                Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(16.dp))
+                Text(stringResource(R.string.deck_study), modifier = Modifier.padding(start = 4.dp))
+            }
+        }
     }
 }
 
