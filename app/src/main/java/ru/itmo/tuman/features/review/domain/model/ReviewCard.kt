@@ -1,5 +1,7 @@
 package ru.itmo.tuman.features.review.domain.model
 
+import java.time.Instant
+
 /**
  * Карточка для экрана повторения.
  *
@@ -12,4 +14,5 @@ data class ReviewCard(
     val back: String,
     val example: String? = null,
     val deckTitle: String = "",
+    val learningDue: Instant? = null,
 )

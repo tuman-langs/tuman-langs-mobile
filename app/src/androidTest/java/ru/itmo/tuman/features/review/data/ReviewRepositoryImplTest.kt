@@ -53,25 +53,24 @@ class ReviewRepositoryImplTest {
     fun goodMovesDueToFutureAndAddsOneHistoryRow() = runBlocking {
         val cardId = newCard(newDeck(), "ҡош")
 
-        repository().submitAnswer(cardId, Rating.GOOD, NOW)
+        val repo = repository()
+        val preview = repo.previewIntervals(cardId, NOW).getValue(Rating.GOOD)
+        assertEquals(java.time.Duration.ofMinutes(10), preview)
+        assertEquals(preview, repo.submitAnswer(cardId, Rating.GOOD, NOW))
 
         val card = db.cardDao().getById(cardId)!!
-        assertTrue("дата показа должна сдвинуться в будущее", card.due > NOW_MS)
+        assertEquals(NOW.plus(preview).toEpochMilli(), card.due)
         assertEquals(NOW_MS, card.lastReview)
         val history = db.reviewDao().getByCard(cardId)
         assertEquals(1, history.size)
         assertEquals(Rating.GOOD.grade, history[0].rating)
         assertEquals(NOW_MS, history[0].reviewedAt)
-        assertTrue(history[0].intervalDays >= 1.0)
-        // Карточка ушла из списка на сегодня
-        assertTrue(repository().observeTodayCards().first().isEmpty())
+        assertEquals(10.0 / (24 * 60), history[0].intervalDays, 1e-9)
+        assertEquals(listOf(cardId), repo.observeTodayCards().first().map { it.id })
+        repo.submitAnswer(cardId, Rating.GOOD, NOW.plus(preview))
+        assertTrue(repo.observeTodayCards().first().isEmpty())
     }
 
-    /**
-     * По docs/fsrs.md (п. «Нет повторов в тот же день») минимальный интервал — 1 день,
-     * а после «не помню» интервал падает до 1–2 дней. Поэтому забытая карточка
-     * возвращается в список через короткий срок, а не сегодня же.
-     */
     @Test
     fun againReturnsCardSoon() = runBlocking {
         val deckId = newDeck()
@@ -82,8 +81,7 @@ class ReviewRepositoryImplTest {
         repository().submitAnswer(cardId, Rating.AGAIN, NOW)
 
         val due = db.cardDao().getById(cardId)!!.due
-        assertTrue("после «не помню» интервал короткий", due - NOW_MS in DAY..3 * DAY)
-        assertTrue(repository().observeTodayCards().first().isEmpty())
+        assertEquals(NOW.plusSeconds(600).toEpochMilli(), due)
         now = Instant.ofEpochMilli(due)
         assertEquals(listOf(cardId), repository().observeTodayCards().first().map { it.id })
     }

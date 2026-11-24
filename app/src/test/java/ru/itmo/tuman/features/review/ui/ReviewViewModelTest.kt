@@ -79,8 +79,7 @@ class ReviewViewModelTest {
         answer(Rating.GOOD)
         assertTrue(viewModel.uiState.value.isFinished)
         assertNull(viewModel.uiState.value.currentCard)
-        // Повтор в конце сессии не пишется в базу и не считается в итоге
-        assertEquals(listOf(1L to Rating.AGAIN, 2L to Rating.GOOD), repository.submitted)
+        assertEquals(listOf(1L to Rating.AGAIN, 2L to Rating.GOOD, 1L to Rating.GOOD), repository.submitted)
         assertEquals(2, viewModel.uiState.value.answersCount)
         assertEquals(1, viewModel.uiState.value.correctAnswers)
         assertEquals(12, viewModel.uiState.value.earnedXp)
@@ -99,23 +98,37 @@ class ReviewViewModelTest {
         answer(Rating.GOOD)
 
         assertTrue(viewModel.uiState.value.isFinished)
-        assertEquals(ratings, repository.submitted.map { it.second })
+        // Повтор после «не помню» тоже сохраняется (короткий шаг), но XP за карточку — один раз
+        assertEquals(ratings + Rating.GOOD, repository.submitted.map { it.second })
         assertEquals(77, viewModel.uiState.value.earnedXp)
     }
 
     @Test
-    fun againOnRepeatReturnsCardToQueueAgainWithoutSaving() {
+    fun againOnRepeatSavesAnswerAndReturnsCardToQueue() {
         answer(Rating.AGAIN)
         answer(Rating.GOOD)
         answer(Rating.AGAIN)
 
         assertEquals(1L, viewModel.uiState.value.currentCard?.id)
         assertEquals(4, viewModel.uiState.value.total)
-        assertEquals(2, repository.submitted.size)
+        assertEquals(3, repository.submitted.size)
 
         answer(Rating.EASY)
         assertTrue(viewModel.uiState.value.isFinished)
-        assertEquals(2, repository.submitted.size)
+        assertEquals(4, repository.submitted.size)
+    }
+
+    @Test
+    fun shortGoodIntervalReturnsCardAfterOtherCards() {
+        repository.goodInterval = Duration.ofMinutes(10)
+        answer(Rating.GOOD)
+        assertEquals(2L, viewModel.uiState.value.currentCard?.id)
+        repository.goodInterval = Duration.ofDays(2)
+        answer(Rating.GOOD)
+        assertEquals(1L, viewModel.uiState.value.currentCard?.id)
+        answer(Rating.GOOD)
+        assertTrue(viewModel.uiState.value.isFinished)
+        assertEquals(3, repository.submitted.size)
     }
 
     @Test
@@ -141,6 +154,49 @@ class ReviewViewModelTest {
         )
     }
 
+    /**
+     * XP в итоге сессии — разница XP прогресса до и после сессии. Если часть карточек уже
+     * засчитана сегодня в другой сессии, итог не покажет за них лишние очки.
+     */
+    @Test
+    fun summaryXpEqualsProgressXpDelta() {
+        viewModel = ReviewViewModel(
+            repository,
+            now = { now },
+            readProgress = {
+                val xp = if (repository.submitted.isEmpty()) 40 else 50
+                ReviewProgressSnapshot(goalDone = false, streak = 1, unlockedAchievements = emptyList(), xp = xp)
+            },
+        )
+
+        answer(Rating.GOOD)
+        assertEquals("во время сессии — по оценкам", 10, viewModel.uiState.value.earnedXp)
+        answer(Rating.EASY)
+
+        assertTrue(viewModel.uiState.value.isFinished)
+        assertEquals("в итоге — как в прогрессе: 50 − 40", 10, viewModel.uiState.value.earnedXp)
+        assertEquals(2, viewModel.uiState.value.answersCount)
+    }
+
+    @Test
+    fun practiceDoesNotReadProgressOrShowHint() {
+        var progressReads = 0
+        val practice = ReviewViewModel(
+            FakeReviewRepository(emptyList(), listOf(card(1))),
+            deckId = 42,
+            now = { now },
+            readProgress = { progressReads++; null },
+        )
+
+        practice.onRevealAnswer()
+        assertFalse("подсказка про оценки не нужна в тренировке", practice.uiState.value.isHintVisible)
+        practice.onRatingSelected(Rating.GOOD)
+
+        assertTrue(practice.uiState.value.isFinished)
+        assertNull(practice.uiState.value.summaryStats)
+        assertEquals(0, progressReads)
+    }
+
     @Test
     fun emptyListShowsTodayDoneState() {
         val emptyViewModel = ReviewViewModel(FakeReviewRepository(emptyList()))
@@ -150,9 +206,43 @@ class ReviewViewModelTest {
     }
 
     @Test
+    fun deckWithNoDueCardsCanBePracticedAndRestartedWithoutSavingRatings() {
+        val practiceRepo = FakeReviewRepository(emptyList(), listOf(card(1)))
+        val practice = ReviewViewModel(practiceRepo, deckId = 42, now = { now })
+
+        repeat(2) {
+            assertTrue(practice.uiState.value.isPractice)
+            assertEquals(1L, practice.uiState.value.currentCard?.id)
+            assertEquals(0, practice.uiState.value.answersCount)
+            practice.onRevealAnswer()
+            practice.onRatingSelected(Rating.AGAIN)
+            assertTrue(practice.uiState.value.isFinished)
+            assertEquals(0, practice.uiState.value.earnedXp)
+            practice.onPracticeAgain()
+        }
+
+        assertTrue(practiceRepo.submitted.isEmpty())
+    }
+
+    @Test
+    fun scheduledDeckSessionCanStartPracticeFromSummary() {
+        val deckRepo = FakeReviewRepository(listOf(card(1)), listOf(card(1), card(2)))
+        val deckSession = ReviewViewModel(deckRepo, deckId = 42, now = { now })
+        assertFalse(deckSession.uiState.value.isPractice)
+        deckSession.onRevealAnswer()
+        deckSession.onRatingSelected(Rating.EASY)
+        assertTrue(deckSession.uiState.value.isFinished)
+
+        deckSession.onPracticeAgain()
+        assertTrue(deckSession.uiState.value.isPractice)
+        assertEquals(2, deckSession.uiState.value.total)
+        assertEquals(listOf(1L to Rating.EASY), deckRepo.submitted)
+    }
+
+    @Test
     fun repositoryFailureIsReported() {
         val failingRepository = object : ReviewRepository by repository {
-            override suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant) {
+            override suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant): Duration {
                 error("database unavailable")
             }
         }
@@ -179,19 +269,32 @@ class ReviewViewModelTest {
         back = "перевод $id",
     )
 
-    private class FakeReviewRepository(cards: List<ReviewCard>) : ReviewRepository {
+    private class FakeReviewRepository(
+        cards: List<ReviewCard>,
+        private val practiceCards: List<ReviewCard> = cards,
+    ) : ReviewRepository {
         private val cardsFlow = MutableStateFlow(cards)
         val submitted = mutableListOf<Pair<Long, Rating>>()
+        var goodInterval: Duration = Duration.ofDays(3)
 
         override fun observeTodayCards(deckId: Long?): Flow<List<ReviewCard>> = cardsFlow
+
+        override suspend fun getPracticeCards(deckId: Long): List<ReviewCard> = practiceCards
 
         override fun observeTodayCount(): Flow<TodayCount> = MutableStateFlow(TodayCount(0, 0))
 
         override suspend fun previewIntervals(cardId: Long, now: Instant): Map<Rating, Duration> =
-            Rating.entries.associateWith { Duration.ofDays(it.grade.toLong()) }
+            Rating.entries.associateWith(::intervalFor)
 
-        override suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant) {
+        override suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant): Duration {
             submitted += cardId to rating
+            return intervalFor(rating)
+        }
+
+        private fun intervalFor(rating: Rating): Duration = when (rating) {
+            Rating.AGAIN -> Duration.ofMinutes(1)
+            Rating.GOOD -> goodInterval
+            else -> Duration.ofDays(rating.grade.toLong())
         }
     }
 }

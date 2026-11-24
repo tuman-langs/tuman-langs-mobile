@@ -79,6 +79,7 @@ val appModule = module {
                     streak = progress.currentStreak,
                     unlockedAchievements = progress.achievements.filter { it.isUnlocked }
                         .map { context.getString(it.type.titleRes()) },
+                    xp = progress.xp,
                 )
             },
         )

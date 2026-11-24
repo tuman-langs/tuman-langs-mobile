@@ -13,6 +13,7 @@ data class ReviewUiState(
     val isHintVisible: Boolean = false,
     val isEmpty: Boolean = false,
     val isFinished: Boolean = false,
+    val isPractice: Boolean = false,
     val isSubmitting: Boolean = false,
     val intervals: Map<Rating, Duration> = emptyMap(),
     val answersCount: Int = 0,
@@ -29,9 +30,13 @@ data class ReviewSummaryStats(
     val unlockedAchievement: String?,
 )
 
-/** Данные прогресса до первого и после последнего ответа, без зависимости от экрана прогресса. */
+/**
+ * Данные прогресса до первого и после последнего ответа, без зависимости от экрана прогресса.
+ * [xp] — все очки из прогресса: разница «после − до» и есть XP за сессию.
+ */
 data class ReviewProgressSnapshot(
     val goalDone: Boolean,
     val streak: Int,
     val unlockedAchievements: List<String>,
+    val xp: Int? = null,
 )

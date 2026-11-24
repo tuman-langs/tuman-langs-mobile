@@ -3,14 +3,10 @@ package ru.itmo.tuman.core.uikit.bashkirKeyboard
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.layout.imePadding
-import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -31,21 +27,17 @@ import ru.itmo.tuman.core.utils.BashkirAlphabet
 import ru.itmo.tuman.core.uikit.theme.TumanTheme
 
 @Composable
-@OptIn(ExperimentalLayoutApi::class)
 fun BashkirKeyboardPanel(
     onLetterClick: (Char) -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    if (WindowInsets.isImeVisible) {
-        BashkirKeyboardButtons(
-            onLetterClick = onLetterClick,
-            modifier = modifier
-                .fillMaxWidth()
-                .imePadding()
-                .background(MaterialTheme.colorScheme.surface)
-                .padding(horizontal = 4.dp, vertical = 2.dp),
-        )
-    }
+    BashkirKeyboardButtons(
+        onLetterClick = onLetterClick,
+        modifier = modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface)
+            .padding(horizontal = 4.dp, vertical = 2.dp),
+    )
 }
 
 @Composable

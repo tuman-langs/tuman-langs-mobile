@@ -115,12 +115,14 @@
     <string name="review_session_finished">Сессия завершена</string>
     <string name="review_today_done">На сегодня всё</string>
     <string name="review_empty_text">Карточек для повторения пока нет.</string>
+    <string name="review_practice_title">Тренировка набора</string>
+    <string name="review_practice_again">Пройти набор ещё раз</string>
     <string name="review_go_home">На главную</string>
     <string name="review_go_progress">К прогрессу</string>
     <string name="review_hint_title">Как оценивать ответ</string>
-    <string name="review_hint_text">Выберите оценку по тому, насколько легко вы вспомнили ответ. «Не помню» вернёт карточку в конец этой сессии.</string>
+    <string name="review_hint_text">Выберите оценку по тому, насколько легко вы вспомнили ответ. Под каждой оценкой указан следующий интервал. Короткий повтор может начаться раньше, если других карточек уже нет.</string>
     <string name="review_hint_dismiss">Понятно</string>
-    <string name="review_hint_again">Не вспомнил(а) — карточка вернётся в конце сессии</string>
+    <string name="review_hint_again">Не вспомнил(а) — карточка вернётся в этой же сессии</string>
     <string name="review_hint_hard">Вспомнил(а) с большим трудом</string>
     <string name="review_hint_good">Вспомнил(а), немного подумав</string>
     <string name="review_hint_easy">Вспомнил(а) сразу</string>

@@ -60,12 +60,11 @@ class DueCardsTest {
     }
 
     @Test
-    fun cardAfterReviewIsNotDueToday() {
-        // Связка со Scheduler: после любого ответа карточка уходит минимум на завтра.
+    fun shortLearningStepsStayOnTodayList() {
         for (rating in Rating.entries) {
             val reviewed = Scheduler.review(CardState.new(now), rating, now)
             val due = DueCards.select(listOf(reviewed), now, zone, 10) { it.due }
-            assertTrue("оценка $rating: due=${reviewed.due}", due.isEmpty())
+            assertEquals("оценка $rating: due=${reviewed.due}", rating != Rating.EASY, due.isNotEmpty())
         }
     }
 }

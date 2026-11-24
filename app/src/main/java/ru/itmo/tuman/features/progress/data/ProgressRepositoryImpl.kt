@@ -38,7 +38,7 @@ class ProgressRepositoryImpl(
             settings.settings,
         ) { answers, reviewedCards, deckCount, userSettings ->
             ProgressCalculator.calculate(
-                answers = answers.map { Answer(grade = it.rating, at = Instant.ofEpochMilli(it.reviewedAt)) },
+                answers = answers.map { Answer(cardId = it.cardId, grade = it.rating, at = Instant.ofEpochMilli(it.reviewedAt)) },
                 learnedCards = reviewedCards.count { it.toCardState().isLearned() },
                 deckCount = deckCount,
                 dailyGoal = userSettings.dailyGoal,

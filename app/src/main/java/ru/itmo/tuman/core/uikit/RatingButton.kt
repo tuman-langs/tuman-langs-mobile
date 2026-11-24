@@ -41,7 +41,7 @@ enum class RatingTone(val color: Color, val background: Color) {
 @Composable
 fun RatingButton(
     label: String,
-    interval: String,
+    interval: String?,
     tone: RatingTone,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
@@ -59,12 +59,14 @@ fun RatingButton(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Text(text = label, style = MaterialTheme.typography.titleSmall, maxLines = 1)
-            Text(
-                text = interval,
-                modifier = Modifier.alpha(0.8f),
-                style = MaterialTheme.typography.labelMedium,
-                maxLines = 1,
-            )
+            if (interval != null) {
+                Text(
+                    text = interval,
+                    modifier = Modifier.alpha(0.8f),
+                    style = MaterialTheme.typography.labelMedium,
+                    maxLines = 1,
+                )
+            }
         }
     }
 }

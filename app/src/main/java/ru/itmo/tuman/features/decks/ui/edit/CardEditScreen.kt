@@ -25,6 +25,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -33,9 +34,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.koin.androidx.compose.koinViewModel
@@ -46,6 +50,8 @@ import ru.itmo.tuman.core.uikit.TumanDangerButton
 import ru.itmo.tuman.core.uikit.TumanPrimaryButton
 import ru.itmo.tuman.core.uikit.TumanTextField
 import ru.itmo.tuman.core.uikit.TumanTopBar
+import ru.itmo.tuman.core.uikit.bashkirKeyboard.BashkirKeyboardPanel
+import ru.itmo.tuman.core.uikit.bashkirKeyboard.insertLetter
 import ru.itmo.tuman.core.uikit.theme.TumanTheme
 
 /** Редактор карточки. [cardId] = `CardEditRoute.NEW_CARD` — создаём новую. */
@@ -145,42 +151,85 @@ fun CardEditContent(state: CardEditUiState, onAction: (CardEditAction) -> Unit) 
 @Composable
 private fun CardEditForm(state: CardEditUiState, modifier: Modifier, onAction: (CardEditAction) -> Unit) {
     val fieldError = stringResource(R.string.card_edit_field_error)
-    Column(
-        modifier = modifier
-            .imePadding()
-            .verticalScroll(rememberScrollState())
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(14.dp),
-    ) {
-        TumanTextField(
-            value = state.front,
-            onValueChange = { onAction(CardEditAction.FrontChange(it)) },
-            label = stringResource(R.string.card_edit_front),
-            error = if (state.frontError) fieldError else null,
-        )
-        TumanTextField(
-            value = state.back,
-            onValueChange = { onAction(CardEditAction.BackChange(it)) },
-            label = stringResource(R.string.card_edit_back),
-            error = if (state.backError) fieldError else null,
-        )
-        TumanTextField(
-            value = state.example,
-            onValueChange = { onAction(CardEditAction.ExampleChange(it)) },
-            label = stringResource(R.string.card_edit_example),
-            singleLine = false,
-        )
-        // TODO(#20): сюда встанет панель башкирских букв от Дворак М.,
-        //  буква будет вставляться в поле, где сейчас курсор.
+    val front = rememberCardField(state.front)
+    val back = rememberCardField(state.back)
+    val example = rememberCardField(state.example)
+    val frontFocusRequester = remember { FocusRequester() }
+    var focusedField by remember { mutableStateOf<MutableState<TextFieldValue>?>(null) }
 
-        if (!state.isNew) CardScheduleInfo(state)
-
-        TumanPrimaryButton(
-            text = stringResource(R.string.action_save),
-            onClick = { onAction(CardEditAction.Save) },
-            modifier = Modifier.fillMaxWidth(),
-        )
+    fun updateField(field: MutableState<TextFieldValue>, value: TextFieldValue) {
+        val textChanged = field.value.text != value.text
+        field.value = value
+        if (textChanged) {
+            onAction(
+                when (field) {
+                    front -> CardEditAction.FrontChange(value.text)
+                    back -> CardEditAction.BackChange(value.text)
+                    else -> CardEditAction.ExampleChange(value.text)
+                },
+            )
+        }
     }
+
+    fun updateFocus(field: MutableState<TextFieldValue>, isFocused: Boolean) {
+        if (isFocused) focusedField = field
+        else if (focusedField === field) focusedField = null
+    }
+
+    Column(modifier.imePadding()) {
+        BashkirKeyboardPanel(onLetterClick = { letter ->
+            val field = focusedField ?: front
+            if (focusedField == null) frontFocusRequester.requestFocus()
+            updateField(field, insertLetter(field.value, letter))
+        })
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(14.dp),
+        ) {
+            TumanTextField(
+                value = front.value,
+                onValueChange = { updateField(front, it) },
+                label = stringResource(R.string.card_edit_front),
+                modifier = Modifier.focusRequester(frontFocusRequester),
+                error = if (state.frontError) fieldError else null,
+                onFocusChanged = { updateFocus(front, it) },
+            )
+            TumanTextField(
+                value = back.value,
+                onValueChange = { updateField(back, it) },
+                label = stringResource(R.string.card_edit_back),
+                error = if (state.backError) fieldError else null,
+                onFocusChanged = { updateFocus(back, it) },
+            )
+            TumanTextField(
+                value = example.value,
+                onValueChange = { updateField(example, it) },
+                label = stringResource(R.string.card_edit_example),
+                singleLine = false,
+                onFocusChanged = { updateFocus(example, it) },
+            )
+
+            if (!state.isNew) CardScheduleInfo(state)
+
+            TumanPrimaryButton(
+                text = stringResource(R.string.action_save),
+                onClick = { onAction(CardEditAction.Save) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+    }
+}
+
+@Composable
+private fun rememberCardField(text: String): MutableState<TextFieldValue> {
+    val field = remember { mutableStateOf(TextFieldValue(text)) }
+    LaunchedEffect(text) {
+        if (field.value.text != text) field.value = TextFieldValue(text)
+    }
+    return field
 }
 
 /** «Следующий показ через N дней» и «Повторений N» — только для сохранённой карточки. */

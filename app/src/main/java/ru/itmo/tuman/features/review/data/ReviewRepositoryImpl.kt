@@ -51,6 +51,11 @@ class ReviewRepositoryImpl(
         dailyGoal.flatMapLatest { goal -> reviewDao.observeTodayCards(startOfNextDayMillis(), deckId, goal) }
             .map { rows -> rows.map { it.toReviewCard() } }
 
+    override suspend fun getPracticeCards(deckId: Long): List<ReviewCard> =
+        db.deckDao().getById(deckId)?.title.orEmpty().let { title ->
+            cardDao.getByDeck(deckId).map { it.toReviewCard(title) }
+        }
+
     override fun observeTodayCount(): Flow<TodayCount> =
         combine(reviewDao.observeTodayCounts(startOfNextDayMillis()), dailyGoal) { counts, goal ->
             // Те же правила, что у списка: сначала карточки на повторение, новые — на остаток цели
@@ -66,10 +71,11 @@ class ReviewRepositoryImpl(
         }
     }
 
-    override suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant) {
+    override suspend fun submitAnswer(cardId: Long, rating: Rating, now: Instant): Duration {
         // Транзакция: или сохранится и новое состояние карточки, и строка истории, или ничего
-        db.withTransaction {
+        return db.withTransaction {
             val next = Scheduler.review(requireCard(cardId).toCardState(), rating, now)
+            val interval = Duration.between(now, next.due)
             cardDao.updateSchedule(
                 id = cardId,
                 stability = next.stability,
@@ -82,9 +88,10 @@ class ReviewRepositoryImpl(
                     cardId = cardId,
                     rating = rating.grade,
                     reviewedAt = now.toEpochMilli(),
-                    intervalDays = Duration.between(now, next.due).toMillis() / MILLIS_PER_DAY,
+                    intervalDays = interval.toMillis() / MILLIS_PER_DAY,
                 ),
             )
+            interval
         }
     }
 
@@ -96,12 +103,19 @@ class ReviewRepositoryImpl(
     }
 }
 
-private fun ReviewCardRow.toReviewCard() = ReviewCard(
-    id = card.id,
-    front = card.front,
-    back = card.back,
-    example = card.example,
+private fun ReviewCardRow.toReviewCard() = card.toReviewCard(deckTitle)
+
+private fun CardEntity.toReviewCard(deckTitle: String) = ReviewCard(
+    id = id,
+    front = front,
+    back = back,
+    example = example,
     deckTitle = deckTitle,
+    // Короткий шаг (меньше суток после ответа) — карточку можно показать ещё раз в этой же сессии
+    learningDue = lastReview
+        ?.let { due - it }
+        ?.takeIf { it in 1 until Duration.ofDays(1).toMillis() }
+        ?.let { Instant.ofEpochMilli(due) },
 )
 
 private fun CardEntity.toCardState() = CardState(
