@@ -1,5 +1,6 @@
 package ru.itmo.tuman.features.progress.ui
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +15,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
@@ -135,12 +139,44 @@ fun ProgressScreen(
 @Composable
 private fun ProgressEmpty(modifier: Modifier, onStartReviewClick: () -> Unit) {
     Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        EmptyState(
-            title = stringResource(R.string.progress_empty_title),
-            text = stringResource(R.string.progress_empty_text),
-            actionText = stringResource(R.string.progress_start_review),
-            onAction = onStartReviewClick,
-        )
+        Column(
+            modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            EmptyState(
+                title = stringResource(R.string.progress_empty_title),
+                text = stringResource(R.string.progress_empty_text),
+                illustration = R.drawable.home_owl,
+            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                AchievementPreview(
+                    type = AchievementType.FIRST_DECK,
+                    modifier = Modifier.weight(1f),
+                    isLocked = true,
+                )
+                AchievementPreview(
+                    type = AchievementType.FIRST_10_CARDS,
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(R.string.progress_empty_achievement_first_10),
+                    isLocked = true,
+                )
+                AchievementPreview(
+                    type = AchievementType.STREAK_3_DAYS,
+                    modifier = Modifier.weight(1f),
+                    title = stringResource(R.string.progress_empty_achievement_streak_3),
+                    isLocked = true,
+                )
+            }
+            TumanPrimaryButton(
+                text = stringResource(R.string.progress_start_review),
+                onClick = onStartReviewClick,
+                modifier = Modifier.fillMaxWidth(),
+                leadingIcon = Icons.Filled.PlayArrow,
+            )
+        }
     }
 }
 
@@ -210,7 +246,7 @@ private fun ProgressContent(
                 ) {
                     unlocked.forEach { achievement ->
                         AchievementPreview(
-                            achievement = achievement,
+                            type = achievement.type,
                             modifier = Modifier.weight(1f),
                         )
                     }
@@ -343,19 +379,31 @@ private fun StatCard(value: String, label: String, modifier: Modifier) {
 }
 
 @Composable
-private fun AchievementPreview(achievement: Achievement, modifier: Modifier) {
+private fun AchievementPreview(
+    type: AchievementType,
+    modifier: Modifier,
+    title: String = achievementTitle(type),
+    isLocked: Boolean = false,
+) {
+    val colors = MaterialTheme.colorScheme
     Card(
         modifier = modifier,
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+        colors = CardDefaults.cardColors(
+            containerColor = if (isLocked) colors.surfaceVariant else colors.surface,
+        ),
     ) {
         Column(
             modifier = Modifier.fillMaxWidth().padding(12.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(achievementEmoji(achievement.type), style = MaterialTheme.typography.headlineSmall)
+            Text(
+                achievementEmoji(type),
+                modifier = Modifier.alpha(if (isLocked) 0.45f else 1f),
+                style = MaterialTheme.typography.headlineSmall,
+            )
             Spacer(Modifier.height(4.dp))
             Text(
-                achievementTitle(achievement.type),
+                title,
                 style = MaterialTheme.typography.bodySmall,
                 textAlign = TextAlign.Center,
             )
@@ -489,13 +537,16 @@ private fun achievementEmoji(type: AchievementType): String = when (type) {
 }
 
 @Composable
-private fun achievementTitle(type: AchievementType): String = when (type) {
-    AchievementType.FIRST_DECK -> stringResource(R.string.achievement_first_deck)
-    AchievementType.FIRST_10_CARDS -> stringResource(R.string.achievement_first_10)
-    AchievementType.STREAK_3_DAYS -> stringResource(R.string.achievement_streak_3)
-    AchievementType.WEEK_NO_GAPS -> stringResource(R.string.achievement_week)
-    AchievementType.LEARNED_100 -> stringResource(R.string.achievement_learned_100)
-    AchievementType.XP_1000 -> stringResource(R.string.achievement_xp_1000)
+private fun achievementTitle(type: AchievementType): String = stringResource(type.titleRes())
+
+@StringRes
+internal fun AchievementType.titleRes(): Int = when (this) {
+    AchievementType.FIRST_DECK -> R.string.achievement_first_deck
+    AchievementType.FIRST_10_CARDS -> R.string.achievement_first_10
+    AchievementType.STREAK_3_DAYS -> R.string.achievement_streak_3
+    AchievementType.WEEK_NO_GAPS -> R.string.achievement_week
+    AchievementType.LEARNED_100 -> R.string.achievement_learned_100
+    AchievementType.XP_1000 -> R.string.achievement_xp_1000
 }
 
 @Composable

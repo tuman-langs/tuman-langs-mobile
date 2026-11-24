@@ -4,11 +4,15 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -16,6 +20,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,8 +43,9 @@ fun TumanPrimaryButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
     size: TumanButtonSize = TumanButtonSize.Regular,
+    leadingIcon: ImageVector? = null,
 ) {
-    FilledButton(text, onClick, MaterialTheme.colorScheme.primary, modifier, enabled, size)
+    FilledButton(text, onClick, MaterialTheme.colorScheme.primary, modifier, enabled, size, leadingIcon)
 }
 
 /** Кнопка акцентного цвета, например «Скачать». */
@@ -112,6 +118,7 @@ private fun FilledButton(
     modifier: Modifier,
     enabled: Boolean,
     size: TumanButtonSize,
+    leadingIcon: ImageVector? = null,
 ) {
     Button(
         onClick = onClick,
@@ -126,6 +133,14 @@ private fun FilledButton(
         ),
         contentPadding = PaddingValues(horizontal = size.horizontalPadding),
     ) {
+        if (leadingIcon != null) {
+            Icon(
+                imageVector = leadingIcon,
+                contentDescription = null,
+                modifier = Modifier.size(ButtonDefaults.IconSize),
+            )
+            Spacer(Modifier.width(ButtonDefaults.IconSpacing))
+        }
         ButtonLabel(text, size.textStyle())
     }
 }

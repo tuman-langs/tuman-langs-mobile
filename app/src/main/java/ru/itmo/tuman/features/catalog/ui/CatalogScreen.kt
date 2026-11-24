@@ -8,14 +8,19 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -108,29 +113,26 @@ private fun CatalogOffline(
     onAction: (CatalogAction) -> Unit,
     onMyDecksClick: () -> Unit,
 ) {
-    Column(
-        modifier = modifier.padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
-    ) {
-        EmptyState(
-            title = stringResource(R.string.catalog_offline_title),
-            text = stringResource(R.string.catalog_offline_text),
-        )
+    Box(modifier, contentAlignment = Alignment.Center) {
         Column(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.verticalScroll(rememberScrollState()).padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
+            EmptyState(
+                title = stringResource(R.string.catalog_offline_title),
+                text = stringResource(R.string.catalog_offline_text),
+                illustration = R.drawable.home_owl,
+            )
             TumanPrimaryButton(
                 text = stringResource(R.string.catalog_retry),
                 onClick = { onAction(CatalogAction.RetryLoad) },
                 modifier = Modifier.fillMaxWidth(),
+                leadingIcon = Icons.Filled.Refresh,
             )
-            TumanSecondaryButton(
-                text = stringResource(R.string.catalog_my_decks),
-                onClick = onMyDecksClick,
-                modifier = Modifier.fillMaxWidth(),
-            )
+            TextButton(onClick = onMyDecksClick) {
+                Text(stringResource(R.string.catalog_my_decks))
+            }
         }
     }
 }

@@ -119,6 +119,29 @@ class ReviewViewModelTest {
     }
 
     @Test
+    fun summaryShowsCurrentProgressAndOnlyAnAchievementUnlockedDuringSession() {
+        viewModel = ReviewViewModel(
+            repository,
+            now = { now },
+            readProgress = {
+                if (repository.submitted.size == 2) {
+                    ReviewProgressSnapshot(true, 3, listOf("Первый набор", "10 карточек"))
+                } else {
+                    ReviewProgressSnapshot(false, 2, listOf("Первый набор"))
+                }
+            },
+        )
+
+        answer(Rating.GOOD)
+        answer(Rating.EASY)
+
+        assertEquals(
+            ReviewSummaryStats(goalDone = true, streak = 3, unlockedAchievement = "10 карточек"),
+            viewModel.uiState.value.summaryStats,
+        )
+    }
+
+    @Test
     fun emptyListShowsTodayDoneState() {
         val emptyViewModel = ReviewViewModel(FakeReviewRepository(emptyList()))
 

@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import ru.itmo.tuman.core.database.TumanDatabase
+import ru.itmo.tuman.core.database.dao.ReviewCardRow
 import ru.itmo.tuman.core.database.entity.CardEntity
 import ru.itmo.tuman.core.database.entity.ReviewEntity
 import ru.itmo.tuman.features.review.domain.ReviewRepository
@@ -95,7 +96,13 @@ class ReviewRepositoryImpl(
     }
 }
 
-private fun CardEntity.toReviewCard() = ReviewCard(id = id, front = front, back = back, example = example)
+private fun ReviewCardRow.toReviewCard() = ReviewCard(
+    id = card.id,
+    front = card.front,
+    back = card.back,
+    example = card.example,
+    deckTitle = deckTitle,
+)
 
 private fun CardEntity.toCardState() = CardState(
     stability = stability,

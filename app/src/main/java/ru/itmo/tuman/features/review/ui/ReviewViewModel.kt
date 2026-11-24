@@ -1,6 +1,5 @@
 package ru.itmo.tuman.features.review.ui
 
-import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.CancellationException
@@ -8,15 +7,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import ru.itmo.tuman.R
+import ru.itmo.tuman.core.settings.SettingsRepository
 import ru.itmo.tuman.core.utils.Xp
 import ru.itmo.tuman.features.review.domain.ReviewRepository
 import ru.itmo.tuman.features.review.domain.model.ReviewCard
 import ru.itmo.tuman.srs.Rating
+import java.io.IOException
 import java.time.Duration
 import java.time.Instant
 
@@ -24,6 +26,8 @@ class ReviewViewModel(
     private val repository: ReviewRepository,
     private val deckId: Long? = null,
     private val now: () -> Instant = Instant::now,
+    private val settingsRepository: SettingsRepository? = null,
+    private val readProgress: suspend () -> ReviewProgressSnapshot? = { null },
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(ReviewUiState())
@@ -37,6 +41,7 @@ class ReviewViewModel(
     private val answeredIds = mutableSetOf<Long>()
     private var sessionStarted = false
     private var hintShown = false
+    private var progressBeforeSession: ReviewProgressSnapshot? = null
 
     init {
         repository.observeTodayCards(deckId)
@@ -47,6 +52,11 @@ class ReviewViewModel(
                     if (cards.isEmpty()) {
                         _uiState.update { it.copy(isLoading = false, isEmpty = true) }
                     } else {
+                        hintShown = try {
+                            settingsRepository?.settings?.first()?.ratingHintShown == true
+                        } catch (_: IOException) {
+                            false
+                        }
                         showCard(0)
                     }
                 }
@@ -63,14 +73,20 @@ class ReviewViewModel(
     }
 
     fun onRevealAnswer() {
-        if (_uiState.value.currentCard == null || _uiState.value.isSubmitting) return
-        _uiState.update {
-            it.copy(
-                isAnswerVisible = true,
-                isHintVisible = !hintShown,
-            )
-        }
+        val state = _uiState.value
+        if (state.currentCard == null || state.isSubmitting || state.isAnswerVisible) return
+        val showHint = !hintShown
         hintShown = true
+        _uiState.update { it.copy(isAnswerVisible = true, isHintVisible = showHint) }
+        if (showHint) {
+            viewModelScope.launch {
+                try {
+                    settingsRepository?.setRatingHintShown()
+                } catch (_: IOException) {
+                    // Подсказка всё равно больше не появится в этой сессии.
+                }
+            }
+        }
     }
 
     fun onHintDismissed() {
@@ -87,6 +103,7 @@ class ReviewViewModel(
             try {
                 val isRepeat = card.id in answeredIds
                 if (!isRepeat) {
+                    if (answeredIds.isEmpty()) progressBeforeSession = loadProgress()
                     repository.submitAnswer(card.id, rating, now())
                     answeredIds += card.id
                 }
@@ -98,6 +115,16 @@ class ReviewViewModel(
                 val nextCorrectAnswers = state.correctAnswers + if (isRepeat || rating == Rating.AGAIN) 0 else 1
                 val nextXp = state.earnedXp + if (isRepeat) 0 else Xp.forRating(rating)
                 if (nextPosition >= sessionCards.size) {
+                    val summaryStats = loadProgress()?.let { progress ->
+                        val previous = progressBeforeSession?.unlockedAchievements
+                        ReviewSummaryStats(
+                            goalDone = progress.goalDone,
+                            streak = progress.streak,
+                            unlockedAchievement = previous?.let { unlocked ->
+                                progress.unlockedAchievements.firstOrNull { it !in unlocked }
+                            },
+                        )
+                    }
                     _uiState.update {
                         it.copy(
                             currentCard = null,
@@ -108,6 +135,7 @@ class ReviewViewModel(
                             answersCount = nextAnswersCount,
                             correctAnswers = nextCorrectAnswers,
                             earnedXp = nextXp,
+                            summaryStats = summaryStats,
                         )
                     }
                 } else {
@@ -136,6 +164,14 @@ class ReviewViewModel(
 
     fun onErrorShown() {
         _uiState.update { it.copy(errorRes = null) }
+    }
+
+    private suspend fun loadProgress(): ReviewProgressSnapshot? = try {
+        readProgress()
+    } catch (error: CancellationException) {
+        throw error
+    } catch (_: Exception) {
+        null
     }
 
     private fun showCard(index: Int) {

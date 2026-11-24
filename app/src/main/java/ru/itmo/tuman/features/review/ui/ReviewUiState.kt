@@ -19,4 +19,19 @@ data class ReviewUiState(
     val correctAnswers: Int = 0,
     val earnedXp: Int = 0,
     val errorRes: Int? = null,
+    val summaryStats: ReviewSummaryStats? = null,
+)
+
+/** Текущий прогресс после сессии и первое достижение, открытое за эту сессию. */
+data class ReviewSummaryStats(
+    val goalDone: Boolean,
+    val streak: Int,
+    val unlockedAchievement: String?,
+)
+
+/** Данные прогресса до первого и после последнего ответа, без зависимости от экрана прогресса. */
+data class ReviewProgressSnapshot(
+    val goalDone: Boolean,
+    val streak: Int,
+    val unlockedAchievements: List<String>,
 )
